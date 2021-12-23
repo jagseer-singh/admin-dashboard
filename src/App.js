@@ -10,13 +10,15 @@ import PatientsDetails from './Components/PatientsDetails';
 function App() {
   return (
     <Router>
-      <NavBar/>
       <Switch>
         <Route exact path="/" component={SignIn}/>
         <Route path="/login" component={SignIn}/>
-        <Route path="/profile" component={Profile}/>
-        <Route path="/registeruser" component={RegisterUser}/>
-        <Route path="/patientsdetails" component={PatientsDetails}/>
+        <div>
+          <NavBar/>
+          <Route path="/profile" component={Profile}/>
+          <Route path="/registeruser" component={RegisterUser}/>
+          <Route path="/patientsdetails" component={PatientsDetails}/>
+        </div>
       </Switch>
     </Router>
   );
