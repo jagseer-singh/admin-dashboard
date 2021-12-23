@@ -1,9 +1,15 @@
-export default function Profile (){
+import React, { useEffect } from "react";
+import { useHistory } from "react-router-dom";
+
+import { auth } from "../firebase";
+import {
+  signOut
+} from "firebase/auth";
+
+export default function Profile (props){    
+
+
     return (
-        <div>
-            <p>
-                Admin Profile
-            </p>
-        </div>
+        <div><p>WELCOMe</p></div>
     )
 };

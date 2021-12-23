@@ -12,6 +12,11 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
+import { auth } from "../firebase";
+import {
+  signOut
+} from "firebase/auth";
+import Cookies from 'js-cookie';
 
 const pages = ['Profile', 'Patients\' Details', 'Register Users','Logout'];
 
@@ -25,6 +30,19 @@ const NavBar = () => {
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      alert('Logged Out Successfully!!'); 
+      Cookies.remove('loggedIn');
+      Cookies.remove('UserID')
+      history.push('/login')
+    } catch (error) {
+      alert('Logout Failed!!');
+    }
+  };
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -76,7 +94,7 @@ const NavBar = () => {
                 <MenuItem key='RegisterUsers' onClick={() => history.push('/registeruser')}>
                   <Typography textAlign="center">Register Users</Typography>
                 </MenuItem>
-                <MenuItem key='Logout' onClick={() => {alert('Logged Out Successfully!'); history.push('/login')}}>
+                <MenuItem key='Logout' onClick={logout}>
                   <Typography textAlign="center">Logout</Typography>
                 </MenuItem>
             </Menu>
@@ -113,7 +131,7 @@ const NavBar = () => {
             </Button>
             <Button
                 key='Logout'
-                onClick={() => {alert('Logged Out Successfully!'); history.push('/login')}}
+                onClick={logout}
                 sx={{ my: 2, color: 'white', display: 'block' }}
             >
                 Logout
