@@ -20,6 +20,8 @@ import Paper from '@mui/material/Paper';
 import PatientCard from './PatientCard';
 import { FieldValue } from '@firebase/firestore';
 import { Avatar, CardActionArea, Stack } from '@mui/material';
+import { db } from "../firebase";
+import { collection, getDocs, getDoc, doc } from "firebase/firestore"
 
 function myfn(){
     alert('clicked on element')
@@ -37,12 +39,29 @@ for(let i=0;i<100;i++){
 }
 
 export default function PatientsDetails() {
-    console.log(data);
+  const [patientsData, setPatientsData] = React.useState({});
+  const [loading, setLoading] = React.useState(true);
+
+  async function getPatientsData() {
+    const patientCollRef = collection(db, "patients");
+    const patientSnap = await getDocs(patientCollRef);
+    const patientsDataTemp = [];
+    patientSnap.docs.map((doc) => {
+      patientsDataTemp.push({...doc.data(), patiendId: doc.id});
+    });
+    setPatientsData(patientsDataTemp);
+    setLoading(false)
+  }
+  
+  React.useEffect( () => {
+    getPatientsData();
+  });
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container rowSpacing={4}>
-        { data.map((value) =>
-            {return <Grid item xs='auto'>
+        { !loading && patientsData.map((value) =>
+            {return <Grid className = 'patientCard' item xs='auto'>
                 <PatientCard patient={value}/>
             </Grid>})
         }

@@ -48,9 +48,9 @@ export default function PatientCard(props) {
                             {props.patient.firstName} {props.patient.lastName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            DOB: {props.patient.dob} <br/>
+                            DOB: {props.patient.dateOfBirth} <br/>
                             Gender: {props.patient.gender} <br/>
-                            Key:{props.patient.key}
+                            Key: {props.patient.patiendId}
                         </Typography>
                     </Stack>
             </Stack>

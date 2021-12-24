@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useHistory } from "react-router-dom"
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -17,24 +18,85 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
+import { auth, db } from "../firebase";
+import {
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
+import { doc, setDoc, collection, getDocs, getDoc, deleteDoc } from "firebase/firestore"
 
 const theme = createTheme();
 
 export default function RegisterUser() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+
   const [RadioValue, setRadioValue] = React.useState('adduser');
+  const [loading, setLoading] = React.useState(false)
+  const history = useHistory();
+
+  async function handleSubmit (event) {
+    event.preventDefault();
+    setLoading(true);
+    const data = new FormData(event.currentTarget);
+    
+    const email = data.get('email');
+    const password = data.get('password');
+    const confirmPassword = data.get('confirmpassword');
+    const firstName = data.get('firstName');
+    const lastName = data.get('lastName');
+
+    if(RadioValue === 'adduser') {
+      if(data.get('password') === data.get('confirmpassword')) {
+        try {
+          const user = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          console.log(user);
+          const fullName = firstName + " " + lastName;
+          await setDoc(doc(db, "users", user.user.uid), {
+            name: fullName,
+            email: email,
+            role: "user"
+          });
+          alert("User Registerd Successfully!!");
+          history.push('/users')
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+      else{
+        alert('Password and Confirm password don\'t match');
+      }
+    }
+    else{
+      const usersCollRef = collection(db, "users");
+      const usersSnap = await getDocs(usersCollRef);
+      let userRole = null;
+      let userId = null;
+      usersSnap.docs.map((doc) => {
+        if(doc.data().email === email ){
+          userId = doc.id;
+          userRole = doc.data().role;
+        }
+      });
+      if(!userId){
+        alert('Cannot find any user with this E-mail')
+      }
+      else if(userRole === "admin"){
+        alert('This email is associated to admin, Cannot revoke Access');
+      }
+      else{
+        await deleteDoc(doc(db, "users", userId));
+        alert('User Revoked Successfully!!');
+        history.push('/users');
+      }
+    }
+    setLoading(false);
+  };
+  
 
   const handleRadio = (event) => {
     setRadioValue(event.target.value);
-    console.log(RadioValue);
   };
 
   return (
@@ -125,7 +187,7 @@ export default function RegisterUser() {
                     fullWidth
                     name="confirmpassword"
                     label="Confirm Password"
-                    type="confirmpassword"
+                    type="password"
                     id="confirmpassword"
                   />
                 </Grid>
@@ -133,6 +195,7 @@ export default function RegisterUser() {
               
             </Grid>
             <Button
+              disabled={loading}
               type="submit"
               fullWidth
               variant="contained"

@@ -12,9 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { maxWidth } from "@mui/system";
 
-
 export default function UserManagement (props){    
-
 
     const [usersData, setUsersData] = React.useState({});
     const [loading, setLoading] = React.useState(true);
@@ -27,8 +25,13 @@ export default function UserManagement (props){
       usersSnap.docs.map((doc) => {
         usersDataTemp.push({...doc.data(), userId: doc.id});
       });
+      usersDataTemp.sort(function (a, b){
+        if(a.email > b.email){
+          return 1;
+        }
+        return -1;
+      });
       setUsersData(usersDataTemp);
-      console.log('Temp',usersDataTemp);
       setLoading(false)
     }
 
@@ -44,18 +47,20 @@ export default function UserManagement (props){
         <div>
         { !loading &&
             <div>
-                <div>
+                <div className="addRevokeButtonContainer">
         <Button onClick={handleSubmit}
               type="submit"
               fullWidth
+              className="addRevokeButton"
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
               Add/Revoke Users
             </Button>   
         </div>
-        <div>
-            <TableContainer component={Paper}>
+        <div className="userTableContainer">
+          <h3>User's Information</h3>
+            <TableContainer className= "userTable" component={Paper}>
       <Table sx={{ minWidth: 650, maxWidth:1000}} aria-label="simple table">
         <TableHead>
           <TableRow>
