@@ -25,8 +25,7 @@ function myfn(){
     alert('clicked on element')
 }
 const data=[];
-const arr=[0, 1, 2, 3,  4, 5, 6, 7, 8, 9 , 10];
-for(let i=0;i<arr.length;i++){
+for(let i=0;i<100;i++){
     const obj={
         key: i,
         firstName: 'Jagseer',
@@ -37,14 +36,14 @@ for(let i=0;i<arr.length;i++){
     data.push(obj);
 }
 
-export default function InteractiveList() {
+export default function PatientsDetails() {
     console.log(data);
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container rowSpacing={4}>
         { data.map((value) =>
             {return <Grid item xs='auto'>
-                <PatientCard firstName={value.firstName} lastName={value.lastName} gender={value.gender} dob={value.dob}/>
+                <PatientCard patient={value}/>
             </Grid>})
         }
       </Grid>

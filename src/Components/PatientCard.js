@@ -42,14 +42,15 @@ export default function PatientCard(props) {
       <CardActionArea>
         <CardContent>
             <Stack direction="row" spacing={4}>
-                <Avatar {...stringAvatar(props.firstName+' '+props.lastName)} />
+                <Avatar {...stringAvatar(props.patient.firstName+' '+props.patient.lastName)} />
                     <Stack direction="column" spacing={0}>
                         <Typography gutterBottom variant="h5" component="div">
-                            {props.firstName} {props.lastName}
+                            {props.patient.firstName} {props.patient.lastName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            DOB: {props.dob} <br/>
-                            Gender: {props.gender}
+                            DOB: {props.patient.dob} <br/>
+                            Gender: {props.patient.gender} <br/>
+                            Key:{props.patient.key}
                         </Typography>
                     </Stack>
             </Stack>

@@ -91,8 +91,8 @@ const NavBar = () => {
                 <MenuItem key='PatientsDetails' onClick={() => history.push('/patientsdetails')}>
                   <Typography textAlign="center">Patients' Details</Typography>
                 </MenuItem>
-                <MenuItem key='RegisterUsers' onClick={() => history.push('/registeruser')}>
-                  <Typography textAlign="center">Register Users</Typography>
+                <MenuItem key='UserManagement' onClick={() => history.push('/users')}>
+                  <Typography textAlign="center">User Management</Typography>
                 </MenuItem>
                 <MenuItem key='Logout' onClick={logout}>
                   <Typography textAlign="center">Logout</Typography>
@@ -123,11 +123,11 @@ const NavBar = () => {
                 Patients' Details
             </Button>
             <Button
-                key='RegisterUsers'
-                onClick={() => history.push('/registeruser')}
+                key='UserManagement'
+                onClick={() => history.push('/users')}
                 sx={{ my: 2, color: 'white', display: 'block' }}
             >
-                Register Users
+                User Management
             </Button>
             <Button
                 key='Logout'
