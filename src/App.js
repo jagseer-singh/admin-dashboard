@@ -8,6 +8,7 @@ import Profile from './Components/Profile';
 import RegisterUser from './Components/RegisterUser';
 import PatientsDetails from './Components/PatientsDetails';
 import ProtectedRoute from "./Components/ProtectedRoute";
+import UserManagement from "./Components/UserManagement";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <ProtectedRoute path="/profile" component={Profile}/>
             <ProtectedRoute path="/registeruser" component={RegisterUser}/>
             <ProtectedRoute path="/patientsdetails" component={PatientsDetails}/>
+            <ProtectedRoute path="/users" component={UserManagement}/>
           </div>
         </Switch>
     </Router>
