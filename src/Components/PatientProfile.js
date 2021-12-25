@@ -17,14 +17,15 @@ import Link from '@mui/material/Link';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
-
+import Modal from "./Modal"
 
 const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_left', 'palm_right', 'tongue'];
 
 const theme = createTheme();
 
 export default function PatientProfile(props) {
-    
+    const [selectedImg, setSelectedImg] = React.useState(null);
+
     React.useEffect( () => {
         
         bodyParts.forEach((bodyPart)=> {
@@ -55,7 +56,6 @@ export default function PatientProfile(props) {
         {console.log(props)}
       <CssBaseline />
       <main>
-        {/* Hero unit */}
         <Box
           sx={{
             bgcolor: 'background.paper',
@@ -87,6 +87,7 @@ export default function PatientProfile(props) {
           <Grid container spacing={4}>
             {bodyParts.map((bodyPart) => (
               <Grid item key={bodyPart} xs={4}>
+                <div onClick = {() => setSelectedImg(document.getElementById(bodyPart).getAttribute('src'))}>
                   <img 
                     className="imageContainerimg"
                     id= {bodyPart}
@@ -94,10 +95,12 @@ export default function PatientProfile(props) {
                     loading="lazy"
                     />
                     <figcaption>{bodyPart.toUpperCase().split('_')[0]} {bodyPart.toUpperCase().split('_')[1]}</figcaption>
+                </div>
               </Grid>
             ))}
           </Grid>
         </Container>
+        { selectedImg && <Modal setSelectedImg= {setSelectedImg} selectedImg = {selectedImg} /> }
       </main>
     </ThemeProvider>
   );

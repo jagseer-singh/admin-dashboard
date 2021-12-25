@@ -12,6 +12,7 @@
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
     "firebase": "9.6.1",
+    "framer-motion": "5.5.5",
     "js-cookie": "^3.0.1",
     "react": "^17.0.2",
     "react-cookie": "4.1.1",
