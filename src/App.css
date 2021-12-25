@@ -38,8 +38,7 @@
 }
 
 .patientCard {
-  min-width: 300px;
-  max-width: 400px !important;
+  width: 375px !important;
   margin: 0px 0px 0px 0px !important;
   padding-left: 32px;
 }
@@ -61,4 +60,31 @@
 
 .userTableContainer{
   text-align: center !important;
+}
+
+.paginationContainer nav ul{
+  justify-content : center !important;
+}
+
+.paginationContainer{
+  margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.imageContainerimg{
+  width: 200px !important;
+}
+.imageContainerimg:hover{
+  width: 400px !important;
+}
+
+.userFilterContainer{
+  margin-left: 5% !important;
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.userFilterContainer Button{
+  margin-left: 10px !important;
+  margin-top: 11px !important
 }

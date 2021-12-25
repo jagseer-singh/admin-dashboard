@@ -52,7 +52,7 @@ export default function SignIn() {
       if(userRole === "admin"){
       Cookies.set('loggedIn',true,{expires:1});
       Cookies.set('UserID', user.user.uid, {expires:1});
-      history.push('/profile');
+      history.push('/users');
       }
       else{
         setError('You don\'t have an Admin Role')
