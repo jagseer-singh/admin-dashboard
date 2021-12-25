@@ -4,8 +4,14 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import { Avatar, CardActionArea, Stack } from '@mui/material';
+import { useHistory } from "react-router-dom";
 
 export default function PatientCard(props) {
+  const history = useHistory();
+  
+  function handleClick(){
+    history.push('/patientprofile', { patient: props.patient });
+  }
     function stringToColor(string) {
         let hash = 0;
         let i;
@@ -39,7 +45,7 @@ export default function PatientCard(props) {
       
     return (
     <Card sx={{ maxWidth: 345 }}>
-      <CardActionArea>
+      <CardActionArea onClick= {handleClick}>
         <CardContent>
             <Stack direction="row" spacing={4}>
                 <Avatar {...stringAvatar(props.patient.firstName+' '+props.patient.lastName)} />

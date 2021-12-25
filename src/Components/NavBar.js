@@ -18,7 +18,7 @@ import {
 } from "firebase/auth";
 import Cookies from 'js-cookie';
 
-const pages = ['Profile', 'Patients\' Details', 'Register Users','Logout'];
+const pages = [ 'Patients\' Details', 'Register Users','Logout'];
 
 const NavBar = () => {
   const history=useHistory();
@@ -85,9 +85,6 @@ const NavBar = () => {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-                <MenuItem key='Profile' onClick={() => history.push('/profile')}>
-                  <Typography textAlign="center">Profile</Typography>
-                </MenuItem>
                 <MenuItem key='PatientsDetails' onClick={() => history.push('/patientsdetails')}>
                   <Typography textAlign="center">Patients' Details</Typography>
                 </MenuItem>
@@ -108,13 +105,6 @@ const NavBar = () => {
             LOGO
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            <Button
-                key='Profile'
-                onClick={() => history.push('/profile')}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-            >
-                Profile
-            </Button>
             <Button
                 key='PatientsDetails'
                 onClick={() => history.push('/patientsdetails')}
