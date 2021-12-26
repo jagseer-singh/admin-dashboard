@@ -1,16 +1,15 @@
-import React, { useEffect } from "react";
-import { useHistory } from "react-router-dom"
-import { db } from "../firebase";
-import { collection, getDocs, getDoc, doc } from "firebase/firestore"
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import { maxWidth } from "@mui/system";
+import { collection, getDocs } from "firebase/firestore";
+import React from "react";
+import { useHistory } from "react-router-dom";
+import { db } from "../firebase";
 
 export default function UserManagement (props){    
 
@@ -22,7 +21,7 @@ export default function UserManagement (props){
       const usersCollRef = collection(db, "users");
       const usersSnap = await getDocs(usersCollRef);
       const usersDataTemp = [];
-      usersSnap.docs.map((doc) => {
+      usersSnap.docs.forEach((doc) => {
         usersDataTemp.push({...doc.data(), userId: doc.id});
       });
       usersDataTemp.sort(function (a, b){
