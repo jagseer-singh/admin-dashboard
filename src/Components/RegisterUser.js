@@ -1,28 +1,24 @@
-import * as React from 'react';
-import { useHistory } from "react-router-dom"
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
 import AssignmentIcon from '@mui/icons-material/Assignment';
-import Typography from '@mui/material/Typography';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import DeleteIcon from '@mui/icons-material/Delete';
+import CssBaseline from '@mui/material/CssBaseline';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
+import Grid from '@mui/material/Grid';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
-import { auth, db } from "../firebase";
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
 import {
-  createUserWithEmailAndPassword,
+  createUserWithEmailAndPassword
 } from "firebase/auth";
-import { doc, setDoc, collection, getDocs, getDoc, deleteDoc } from "firebase/firestore"
+import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
+import * as React from 'react';
+import { useHistory } from "react-router-dom";
+import { auth, db } from "../firebase";
 
 const theme = createTheme();
 
@@ -44,7 +40,7 @@ export default function RegisterUser() {
     const lastName = data.get('lastName');
 
     if(RadioValue === 'adduser') {
-      if(data.get('password') === data.get('confirmpassword')) {
+      if(password === confirmPassword) {
         try {
           const user = await createUserWithEmailAndPassword(
             auth,
@@ -73,7 +69,7 @@ export default function RegisterUser() {
       const usersSnap = await getDocs(usersCollRef);
       let userRole = null;
       let userId = null;
-      usersSnap.docs.map((doc) => {
+      usersSnap.docs.forEach((doc) => {
         if(doc.data().email === email ){
           userId = doc.id;
           userRole = doc.data().role;

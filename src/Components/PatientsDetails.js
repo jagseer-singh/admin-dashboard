@@ -1,39 +1,19 @@
-import * as React from 'react';
-import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Grid from '@mui/material/Grid';
-import Pagination from '@mui/material/Pagination';
-import MenuItem from '@mui/material/MenuItem';
-import InputLabel from '@mui/material/InputLabel';
 import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
+import Grid from '@mui/material/Grid';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Pagination from '@mui/material/Pagination';
 import Select from '@mui/material/Select';
-import { db } from "../firebase";
-import { collection, getDocs, getDoc, doc } from "firebase/firestore"
-import Typography from '@mui/material/Typography';
-import FolderIcon from '@mui/icons-material/Folder';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { ListItemButton } from '@mui/material';
-import { pink } from '@mui/material/colors';
-import Paper from '@mui/material/Paper';
-import PatientCard from './PatientCard';
-import { FieldValue } from '@firebase/firestore';
-import { Avatar, CardActionArea, Stack } from '@mui/material';
 import TextField from '@mui/material/TextField';
+import { collection, getDocs } from "firebase/firestore";
+import * as React from 'react';
+import { db } from "../firebase";
+import PatientCard from './PatientCard';
 
 export default function PatientsDetails() {
   const [loading, setLoading] = React.useState(true);
   const [page, setPage]=React.useState(1);
-  const [cardsPerPage, setCardsPerPage]=React.useState(30);
   const [numOfPages, setNumOfPages]=React.useState(1);
   const [patientsData, setPatientsData] = React.useState([]);
   const [filteredPatientsData, setFilteredPatientsData] = React.useState([]);
@@ -42,6 +22,7 @@ export default function PatientsDetails() {
   const [userSort, setUserSort] = React.useState(0);
   const [nameFilter, setNameFilter] = React.useState('');
   const [nameFilterChange, setNameFilterChange] = React.useState(false);
+  const cardsPerPage = 30;
 
   const filterUsingName = (name) =>{
     const patientDataTemp = patientsData.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(name.toLowerCase()));
@@ -129,7 +110,7 @@ export default function PatientsDetails() {
     const usersSnap = await getDocs(usersCollRef);
     const userIdNameMap = {};
     const users = {};
-    usersSnap.docs.map((doc, index) => {
+    usersSnap.docs.forEach((doc, index) => {
       users[index] = { name: doc.data().name, userId: doc.id };
       userIdNameMap[doc.id] = doc.data().name;
     });
@@ -138,7 +119,7 @@ export default function PatientsDetails() {
     const patientCollRef = collection(db, "patients");
     const patientSnap = await getDocs(patientCollRef);
     let patientsDataTemp = [];
-    patientSnap.docs.map((doc) => {
+    patientSnap.docs.forEach((doc) => {
       patientsDataTemp.push({...doc.data(), patiendId: doc.id, userName: userIdNameMap[doc.data().userId]});
     });
     //patientsDataTemp=patientsDataTemp.concat(patientsDataTemp).concat(patientsDataTemp);
