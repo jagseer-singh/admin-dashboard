@@ -24,6 +24,34 @@ const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_lef
 const theme = createTheme();
 
 export default function PatientProfile(props) {
+    let gender,socioEco,labReportStatus;
+    if(props.location.state.patient.gender==='M'){
+        gender='Male';
+    }
+    else if(props.location.state.patient.gender==='F'){
+        gender='Female';
+    }
+    else{
+        gender='Others';
+    }
+
+    if(props.location.state.patient.socioEconomicStatus=='APL'){
+        socioEco='Above Poverty Line';
+    }
+    else if(props.location.state.patient.socioEconomicStatus=='BPL'){
+        socioEco='Below Poverty Line';
+    }
+    else{
+        socioEco='Preferred Not to Share';
+    }
+
+    if(props.location.state.patient.received===0){
+        labReportStatus='Pending';
+    }
+    else{
+        labReportStatus='Received';
+    }
+
     const [selectedImg, setSelectedImg] = React.useState(null);
 
     React.useEffect( () => {
@@ -73,13 +101,21 @@ export default function PatientProfile(props) {
             >
               {props.location.state.patient.firstName} {props.location.state.patient.lastName}
             </Typography>
-            <Stack
-              sx={{ pt: 4 }}
-              direction="row"
-              spacing={2}
-              justifyContent="center"
-            >
-            </Stack>
+            <Typography>
+                Gender: {gender}
+            </Typography>
+            <Typography>
+                DOB: {props.location.state.patient.dateOfBirth}
+            </Typography>
+            <Typography>
+                Collected By: {props.location.state.patient.userName}
+            </Typography>
+            <Typography>
+                Socio-Economic Status: {socioEco}
+            </Typography>
+            <Typography>
+                Lab Report Status: {labReportStatus}
+            </Typography>
           </Container>
         </Box>
         <Container sx={{ py: 8 }} maxWidth="md">
