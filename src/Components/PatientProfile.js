@@ -15,6 +15,7 @@ const theme = createTheme();
 
 export default function PatientProfile(props) {
     let gender,socioEco,labReportStatus;
+    const createdOn = new Date(props.location.state.patient.createdOn.seconds * 1000);
     if(props.location.state.patient.gender==='M'){
         gender='Male';
     }
@@ -67,6 +68,7 @@ export default function PatientProfile(props) {
         .catch((error) => {
           const img = document.getElementById(bodyPart);
           img.setAttribute('alt', 'NOT FOUND')
+          img.setAttribute('src', 'image/imgNotFound.png')
     });
   });
 });
@@ -107,6 +109,9 @@ export default function PatientProfile(props) {
             <Typography>
                 Lab Report Status: {labReportStatus}
             </Typography>
+            <Typography>
+                Patient Created On: {createdOn.toDateString()} {createdOn.toLocaleTimeString()}
+            </Typography>
           </Container>
         </Box>
         <Container sx={{ py: 8 }} maxWidth="md">
@@ -119,6 +124,7 @@ export default function PatientProfile(props) {
                     className="imageContainerimg"
                     id= {bodyPart}
                     alt={bodyPart}
+                    src = "image/loadingImage.png"
                     loading="lazy"
                     />
                     <figcaption>{bodyPart.toUpperCase().split('_')[0]} {bodyPart.toUpperCase().split('_')[1]}</figcaption>
