@@ -22,7 +22,8 @@ export default function UserManagement (props){
       const usersSnap = await getDocs(usersCollRef);
       const usersDataTemp = [];
       usersSnap.docs.forEach((doc) => {
-        usersDataTemp.push({...doc.data(), userId: doc.id});
+        if(doc.data().active===1){
+        usersDataTemp.push({...doc.data(), userId: doc.id});}
       });
       usersDataTemp.sort(function (a, b){
         if(a.email > b.email){
