@@ -15,7 +15,7 @@ import TextField from '@mui/material/TextField';
 import {
   createUserWithEmailAndPassword
 } from "firebase/auth";
-import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, setDoc,updateDoc } from "firebase/firestore";
 import * as React from 'react';
 import { useHistory } from "react-router-dom";
 import { auth, db } from "../firebase";
@@ -52,7 +52,8 @@ export default function RegisterUser() {
           await setDoc(doc(db, "users", user.user.uid), {
             name: fullName,
             email: email,
-            role: "user"
+            role: "user",
+            active:1
           });
           alert("User Registerd Successfully!!");
           history.push('/users')
@@ -82,7 +83,10 @@ export default function RegisterUser() {
         alert('This email is associated to admin, Cannot revoke Access');
       }
       else{
-        await deleteDoc(doc(db, "users", userId));
+        // await deleteDoc(doc(db, "users", userId));
+        await updateDoc(doc(db, "users", userId), {
+          active:0
+        });
         alert('User Revoked Successfully!!');
         history.push('/users');
       }

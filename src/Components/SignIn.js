@@ -38,14 +38,15 @@ export default function SignIn() {
       const userDocRef = doc(db, "users", user.user.uid);
       const userSnap = await getDoc(userDocRef);
       const userRole = userSnap.data().role;
+      const isActive=userSnap.data().active;
       
-      if(userRole === "admin"){
+      if(userRole === "admin" && isActive===1){
       Cookies.set('loggedIn',true,{expires:1});
       Cookies.set('UserID', user.user.uid, {expires:1});
       history.push('/users');
       }
       else{
-        setError('You don\'t have an Admin Role')
+        setError('You don\'t have an Active admin Role')
         history.push('/login');
       }
     } catch (error) {
