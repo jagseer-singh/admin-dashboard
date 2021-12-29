@@ -1,9 +1,8 @@
-import * as React from 'react';
+import { Avatar, CardActionArea, Stack } from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
-import { Avatar, CardActionArea, Stack } from '@mui/material';
+import * as React from 'react';
 import { useHistory } from "react-router-dom";
 
 export default function PatientCard(props) {
@@ -56,7 +55,7 @@ export default function PatientCard(props) {
                         <Typography variant="body2" color="text.secondary">
                             DOB: {props.patient.dateOfBirth} <br/>
                             Gender: {props.patient.gender} <br/>
-                            Key: {props.patient.patiendId}
+                            Key: {props.patient.createdOn?props.patient.createdOn.seconds:'loading'} <br/>
                         </Typography>
                     </Stack>
             </Stack>

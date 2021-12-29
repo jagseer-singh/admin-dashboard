@@ -1,37 +1,27 @@
-import * as React from "react";
-import { useHistory } from "react-router-dom"
-import Avatar from '@mui/material/Avatar';
-import { Alert } from '@mui/material';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
+import { Alert } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { auth } from "../firebase";
-import {
-  signInWithEmailAndPassword,
-  onAuthStateChanged
-} from "firebase/auth";
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import Cookies from 'js-cookie';
-import { db } from "../firebase";
-import { collection, getDocs, getDoc, doc } from "firebase/firestore"
+import * as React from "react";
+import { useHistory } from "react-router-dom";
+import { auth, db } from "../firebase";
 
 const theme = createTheme();
 
 export default function SignIn() {
 
-  const [user, setUser] = React.useState({});
   const [error, setError] = React.useState("")
   const [loading, setLoading] = React.useState(false)
   const history = useHistory()
-
-  onAuthStateChanged(auth, (currentUser) => {
-    setUser(currentUser);
-  });
-
 
   async function handleSubmit (event){
     event.preventDefault();
@@ -48,14 +38,15 @@ export default function SignIn() {
       const userDocRef = doc(db, "users", user.user.uid);
       const userSnap = await getDoc(userDocRef);
       const userRole = userSnap.data().role;
+      const isActive=userSnap.data().active;
       
-      if(userRole === "admin"){
+      if(userRole === "admin" && isActive===1){
       Cookies.set('loggedIn',true,{expires:1});
       Cookies.set('UserID', user.user.uid, {expires:1});
       history.push('/users');
       }
       else{
-        setError('You don\'t have an Admin Role')
+        setError('You don\'t have an Active admin Role')
         history.push('/login');
       }
     } catch (error) {
