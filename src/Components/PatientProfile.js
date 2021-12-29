@@ -8,7 +8,6 @@ import { getDownloadURL, ref } from "firebase/storage";
 import * as React from 'react';
 import { storage } from "../firebase";
 import Modal from "./Modal";
-import CircularProgress from "@mui/material/CircularProgress";
 
 const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_left', 'palm_right', 'tongue'];
 
@@ -46,38 +45,31 @@ export default function PatientProfile(props) {
     const [selectedImg, setSelectedImg] = React.useState(null);
 
     React.useEffect( () => {
-          bodyParts.forEach((bodyPart)=> {
-              const urlString = `${bodyPart}/${props.location.state.patient.patiendId}`;
-              let ImageContainer=document.getElementById(`${bodyPart}Container`);
-              console.log(urlString);
-          getDownloadURL(ref(storage, urlString))
-          //getDownloadURL(ref(storage, 'left_eye/Rtfat90PqpMkcD3wWcnT'))
-          .then((url) => {
-            const xhr = new XMLHttpRequest();
-            
-            xhr.responseType = 'blob';
-            xhr.onload = (event) => {
-              const blob = xhr.response;
-            };
-            xhr.open('GET', url);
-            xhr.send();
-            document.getElementById(bodyPart).remove();
-            const img = new Image()
-            img.className="imageContainerimg";
-            img.id=bodyPart;
-            img.alt=bodyPart;
-            img.src=url;
-            img.loading="lazy";
-            ImageContainer.appendChild(img);
-            
-          })
-          .catch((error) => {
-            const img = document.getElementById(bodyPart);
-            img.setAttribute('alt', 'NOT FOUND')
-      });
+        
+        bodyParts.forEach((bodyPart)=> {
+            const urlString = `${bodyPart}/${props.location.state.patient.patiendId}`;
+            console.log(urlString);
+        getDownloadURL(ref(storage, urlString))
+        //getDownloadURL(ref(storage, 'left_eye/Rtfat90PqpMkcD3wWcnT'))
+        .then((url) => {
+          const xhr = new XMLHttpRequest();
+          
+          xhr.responseType = 'blob';
+          xhr.onload = (event) => {
+            const blob = xhr.response;
+            console.log(blob);
+          };
+          xhr.open('GET', url);
+          xhr.send();
+          const img = document.getElementById(bodyPart);
+          img.setAttribute('src', url);
+        })
+        .catch((error) => {
+          const img = document.getElementById(bodyPart);
+          img.setAttribute('alt', 'NOT FOUND')
     });
-    });
-    
+  });
+});
   return (
     <ThemeProvider theme={theme}>
         {console.log(props)}
@@ -123,10 +115,13 @@ export default function PatientProfile(props) {
             {bodyParts.map((bodyPart) => (
               <Grid item key={bodyPart} xs={4}>
                 <div onClick = {() => setSelectedImg(document.getElementById(bodyPart).getAttribute('src'))}>
-                  <div id={`${bodyPart}Container`} >
-                    <CircularProgress id={bodyPart}/>
-                  </div>
-                  <figcaption>{bodyPart.toUpperCase().split('_')[0]} {bodyPart.toUpperCase().split('_')[1]}</figcaption>
+                  <img 
+                    className="imageContainerimg"
+                    id= {bodyPart}
+                    alt={bodyPart}
+                    loading="lazy"
+                    />
+                    <figcaption>{bodyPart.toUpperCase().split('_')[0]} {bodyPart.toUpperCase().split('_')[1]}</figcaption>
                 </div>
               </Grid>
             ))}
