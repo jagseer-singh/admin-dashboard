@@ -15,7 +15,6 @@ const theme = createTheme();
 
 export default function PatientProfile(props) {
     let gender,socioEco,labReportStatus;
-    const createdOn = new Date(props.location.state.patient.createdOn.seconds * 1000);
     if(props.location.state.patient.gender==='M'){
         gender='Male';
     }
@@ -46,9 +45,9 @@ export default function PatientProfile(props) {
     const [selectedImg, setSelectedImg] = React.useState(null);
 
     React.useEffect( () => {
-        
+        window.scrollTo(0, 0);
         bodyParts.forEach((bodyPart)=> {
-            const urlString = `${bodyPart}/${props.location.state.patient.patiendId}`;
+            const urlString = `${bodyPart}/${props.location.state.patient.id}`;
             console.log(urlString);
         getDownloadURL(ref(storage, urlString))
         //getDownloadURL(ref(storage, 'left_eye/Rtfat90PqpMkcD3wWcnT'))
@@ -110,10 +109,11 @@ export default function PatientProfile(props) {
                 Lab Report Status: {labReportStatus}
             </Typography>
             <Typography>
-                Patient Created On: {createdOn.toDateString()} {createdOn.toLocaleTimeString()}
+                Patient Created On: {props.location.state.patient.createdOn.toDateString()} {props.location.state.patient.createdOn.toLocaleTimeString()}
             </Typography>
           </Container>
         </Box>
+        {console.log(props)}
         <Container sx={{ py: 8 }} maxWidth="md">
           {/* End hero unit */}
           <Grid container spacing={4}>

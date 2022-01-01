@@ -112,3 +112,13 @@
   float: right !important;
   margin-right: 5% !important;
 }
+
+.patientGridContainer {
+  min-height: 100px !important; 
+  margin-left: 2% !important;
+  width: 100% !important; 
+}
+
+.patientGridBox {
+  margin-bottom: 20px;
+}

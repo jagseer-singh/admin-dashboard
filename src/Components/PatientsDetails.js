@@ -10,24 +10,33 @@ import { collection, getDocs } from "firebase/firestore";
 import * as React from 'react';
 import { db } from "../firebase";
 import PatientCard from './PatientCard';
+import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { useHistory } from "react-router-dom";
+
+const columns = [
+  { field: 'firstName', headerName: 'First name', width: 130 },
+  { field: 'lastName', headerName: 'Last name', width: 130 },
+  { field: 'dateOfBirth', type: 'date', headerName: 'DOB', width: 130 },
+  { field: 'gender', headerName: 'Gender', width: 100 },
+  { field: 'createdOn', type: 'dateTime', headerName: 'Created On', width: 200 },
+  { field: 'lastModifiedOn', type: 'dateTime', headerName: 'Last Modified On', width: 200 },
+  { field: 'userName', headerName: 'Created By', width: 130 },
+];
 
 export default function PatientsDetails() {
+  const history = useHistory();
   const [loading, setLoading] = React.useState(true);
-  const [page, setPage]=React.useState(1);
-  const [numOfPages, setNumOfPages]=React.useState(1);
   const [patientsData, setPatientsData] = React.useState([]);
   const [filteredPatientsData, setFilteredPatientsData] = React.useState([]);
   const [users, setUsers] = React.useState([]);
   const [userFilter, setUserFilter] = React.useState(-1);
-  const [userSort, setUserSort] = React.useState(0);
   const [nameFilter, setNameFilter] = React.useState('');
   const [nameFilterChange, setNameFilterChange] = React.useState(false);
-  const cardsPerPage = 30;
 
   const filterUsingName = (name) =>{
     const patientDataTemp = patientsData.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(name.toLowerCase()));
     setFilteredPatientsData(patientDataTemp);
-    setNumOfPages(Math.ceil(patientDataTemp.length/cardsPerPage));
+
     setNameFilterChange(false);
   };
 
@@ -40,68 +49,14 @@ export default function PatientsDetails() {
     setUserFilter(event.target.value);
   };
 
-  const handleSortChange = (event) => {
-    const newUserSort=event.target.value;
-    setUserSort(newUserSort);
-    console.log(newUserSort, userSort);
-    if(newUserSort===0){ //A-Z
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.firstName+a.lastName > b.firstName+b.lastName){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===1){ //Z-A
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.firstName+a.lastName < b.firstName+b.lastName){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===2){ //date created(latest first)
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.createdOn > b.createdOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===3){ //date created(earliest first)
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.createdOn < b.createdOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===4){
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.lastModifiedOn < b.lastModifiedOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else{
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.lastModifiedOn > b.lastModifiedOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-  };
-
   const handleFilterSubmit = (event) => {
     if(userFilter=== -1 ) {
       setFilteredPatientsData(patientsData);
-      setNumOfPages(Math.ceil(patientsData.length/cardsPerPage));
+    
     } else {
     const patientDataTemp = patientsData.filter((patient) => patient.userId === users[userFilter].userId);
     setFilteredPatientsData(patientDataTemp);
-    setNumOfPages(Math.ceil(patientDataTemp.length/cardsPerPage));
+    
     }
   };
 
@@ -120,22 +75,21 @@ export default function PatientsDetails() {
     const patientSnap = await getDocs(patientCollRef);
     let patientsDataTemp = [];
     patientSnap.docs.forEach((doc) => {
-      patientsDataTemp.push({...doc.data(), patiendId: doc.id, userName: userIdNameMap[doc.data().userId]});
+      patientsDataTemp.push({...doc.data(), id: doc.id, 
+      createdOn: new Date(doc.data().createdOn.seconds * 1000), 
+      lastModifiedOn: new Date(doc.data().lastModifiedOn.seconds * 1000),
+      userName: userIdNameMap[doc.data().userId],
+      dateOfBirth: doc.data().dateOfBirth.split('/')[1]+'/'+doc.data().dateOfBirth.split('/')[0]+'/'+doc.data().dateOfBirth.split('/')[2]
+      });
     });
-    //patientsDataTemp=patientsDataTemp.concat(patientsDataTemp).concat(patientsDataTemp);
-    patientsDataTemp.sort(function (a, b){
-      if(a.firstName+a.lastName > b.firstName+b.lastName){
-        return 1;
-      }
-      return -1;
-    })
     setPatientsData(patientsDataTemp);
-    setNumOfPages(Math.ceil(patientsDataTemp.length/cardsPerPage));
+    
     setFilteredPatientsData(patientsDataTemp);
     setLoading(false);
   }
   
   React.useEffect( () => {
+    console.log('Hi');
     if(loading){
       getPatientsData();
     }
@@ -180,38 +134,18 @@ export default function PatientsDetails() {
               value={nameFilter}
               onChange = {handleNameFilter}
               />
-
-              {//sort feature
-              }
-              {//<InputLabel id="simple-select-label">Sort by:</InputLabel>
-              }
-              <Select className="sortContainer"
-                labelId="simple-sort-label"
-                id="simple-sort"
-                label="Sort"
-                value = {userSort}
-                onChange={handleSortChange}
-              >
-                <MenuItem value = {0} >A-Z</MenuItem>
-                <MenuItem value = {1} >Z-A</MenuItem>
-                <MenuItem value = {2} >Date Created (Earliest First)</MenuItem>
-                <MenuItem value = {3} >Date Created (Latest First)</MenuItem>
-                <MenuItem value = {4} >Date Modified (Latest Modified First)</MenuItem>
-                <MenuItem value = {4} >Date Modified (Oldest Modified First)</MenuItem>
-              </Select>
           </Box>
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container rowSpacing={4}>
-        { filteredPatientsData.slice(cardsPerPage*(page-1),cardsPerPage*page).map((value) =>
-            {return <Grid className = 'patientCard' item xs='auto'>
-                <PatientCard patient={value}/>
-            </Grid>})
-        }
-      </Grid>
-      <div className='paginationContainer'>
-        {!loading &&
-        <Pagination count={numOfPages} color="secondary" onChange={(e,value)=>setPage(value)} />
-        }
+    <Box className = 'patientGridBox' sx={{ flexGrow: 1 }}>
+      <div className = "patientGridContainer" >
+      <DataGrid
+          onRowClick = {(row) => history.push('/patientprofile', { patient: row.row })}
+          rows={filteredPatientsData}
+          columns={columns}
+          pageSize={30}
+          rowsPerPageOptions={[30]}
+          rowHeight={60}
+          autoHeight={true}
+        />
       </div>
     </Box>
     </div>
