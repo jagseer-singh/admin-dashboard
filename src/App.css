@@ -37,12 +37,6 @@
   }
 }
 
-.patientCard {
-  width: 375px !important;
-  margin: 0px 0px 0px 0px !important;
-  padding-left: 32px;
-}
-
 .addRevokeButtonContainer{
   text-align: right;
 }
@@ -62,28 +56,37 @@
   text-align: center !important;
 }
 
-.paginationContainer nav ul{
-  justify-content : center !important;
-}
-
-.paginationContainer{
-  margin-top: 20px;
-    margin-bottom: 30px;
-}
-
 .imageContainerimg{
   width: 200px !important;
 }
 
-.userFilterContainer{
+.filterContainer{
   margin-left: 5% !important;
   padding-bottom: 10px;
   padding-top: 10px;
 }
 
-.userFilterContainer Button{
-  margin-left: 10px !important;
+.filterContainer Button{
+  margin-left: 20px !important;
   margin-top: 11px !important
+}
+
+.name-search {
+  margin-top: 0px !important;
+  margin-left: 3% !important;
+}
+
+.reportFilter {
+  margin-left:3% !important;
+  margin-top: 2px !important;
+}
+
+.userFilter {
+  margin-top:2px !important;
+}
+
+.patientDataGrid{
+  width:1141px;
 }
 
 .backdrop{
@@ -101,16 +104,6 @@
   margin: 60px auto;
   box-shadow: 3px 5px 7px rgba(0,0,0,0.5);
   border: 3px solid white;
-}
-
-.name-search {
-  margin-top: 0px !important;
-  margin-left: 10% !important;
-}
-
-.sortContainer {
-  float: right !important;
-  margin-right: 5% !important;
 }
 
 .patientGridContainer {
