@@ -1,108 +1,71 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Pagination from '@mui/material/Pagination';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import FormControl from "@mui/material/FormControl";
 import { collection, getDocs } from "firebase/firestore";
 import * as React from 'react';
 import { db } from "../firebase";
-import PatientCard from './PatientCard';
+import { DataGrid } from '@mui/x-data-grid';
+import { useHistory } from "react-router-dom";
+
+const columns = [
+  { field: 'firstName', headerName: 'First name', width: 130 },
+  { field: 'lastName', headerName: 'Last name', width: 130 },
+  { field: 'dateOfBirth', type: 'date', headerName: 'DOB (mm/dd/yyyy)', width: 170 },
+  { field: 'gender', headerName: 'Gender', width: 100 },
+  { field: 'createdOn', type: 'dateTime', headerName: 'Created On (mm/dd/yyyy)', width: 240 },
+  { field: 'lastModifiedOn', type: 'dateTime', headerName: 'Last Modified On (mm/dd/yyyy)', width: 240 },
+  { field: 'userName', headerName: 'Created By', width: 130 },
+];
 
 export default function PatientsDetails() {
+  const history = useHistory();
   const [loading, setLoading] = React.useState(true);
-  const [page, setPage]=React.useState(1);
-  const [numOfPages, setNumOfPages]=React.useState(1);
   const [patientsData, setPatientsData] = React.useState([]);
   const [filteredPatientsData, setFilteredPatientsData] = React.useState([]);
   const [users, setUsers] = React.useState([]);
   const [userFilter, setUserFilter] = React.useState(-1);
-  const [userSort, setUserSort] = React.useState(0);
   const [nameFilter, setNameFilter] = React.useState('');
-  const [nameFilterChange, setNameFilterChange] = React.useState(false);
-  const cardsPerPage = 30;
+  const [reportFilter, setReportFilter] = React.useState(-1);
 
-  const filterUsingName = (name) =>{
-    const patientDataTemp = patientsData.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(name.toLowerCase()));
-    setFilteredPatientsData(patientDataTemp);
-    setNumOfPages(Math.ceil(patientDataTemp.length/cardsPerPage));
-    setNameFilterChange(false);
+  const applyFilters = (userF, nameF, reportF) => {
+    let filteredDataTemp = patientsData;
+    filteredDataTemp = filteredDataTemp.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(nameF.toLowerCase()));
+    if(userF !== -1){
+      filteredDataTemp = filteredDataTemp.filter((patient) => patient.userId === users[userF].userId);
+    }
+    if(reportF !== -1){
+      filteredDataTemp = filteredDataTemp.filter((patient) => patient.received === reportF);
+    }
+    setFilteredPatientsData(filteredDataTemp);
+  }
+
+  const handleNameFilterChange = (event) => {
+    const name = event.target.value;
+    applyFilters(userFilter, name, reportFilter);
+    setNameFilter(name);
   };
 
-  const handleNameFilter = (event) => {
-    setNameFilter(event.target.value);
-    setNameFilterChange(true)
+  const handleReportFilterChange = (event) => {
+    const report = event.target.value;
+    applyFilters(userFilter, nameFilter, report);
+    setReportFilter(report);
   };
 
-  const handleFilterChange = (event) => {
-    setUserFilter(event.target.value);
+  const handleUserFilterChange = (event) => {
+    const user = event.target.value;
+    applyFilters(user, nameFilter, reportFilter);
+    setUserFilter(user);
   };
 
-  const handleSortChange = (event) => {
-    const newUserSort=event.target.value;
-    setUserSort(newUserSort);
-    console.log(newUserSort, userSort);
-    if(newUserSort===0){ //A-Z
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.firstName+a.lastName > b.firstName+b.lastName){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===1){ //Z-A
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.firstName+a.lastName < b.firstName+b.lastName){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===2){ //date created(latest first)
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.createdOn > b.createdOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===3){ //date created(earliest first)
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.createdOn < b.createdOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else if(newUserSort===4){
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.lastModifiedOn < b.lastModifiedOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-    else{
-      setFilteredPatientsData(patientsData.sort(function (a, b){
-        if(a.lastModifiedOn > b.lastModifiedOn){
-          return 1;
-        }
-        return -1;
-      }))
-    }
-  };
-
-  const handleFilterSubmit = (event) => {
-    if(userFilter=== -1 ) {
-      setFilteredPatientsData(patientsData);
-      setNumOfPages(Math.ceil(patientsData.length/cardsPerPage));
-    } else {
-    const patientDataTemp = patientsData.filter((patient) => patient.userId === users[userFilter].userId);
-    setFilteredPatientsData(patientDataTemp);
-    setNumOfPages(Math.ceil(patientDataTemp.length/cardsPerPage));
-    }
+  const handleFilterClear = (event) => {
+    setUserFilter(-1);
+    setNameFilter('');
+    setReportFilter(-1);
+    applyFilters(-1, '', -1);
   };
 
   async function getPatientsData() {
@@ -120,17 +83,20 @@ export default function PatientsDetails() {
     const patientSnap = await getDocs(patientCollRef);
     let patientsDataTemp = [];
     patientSnap.docs.forEach((doc) => {
-      patientsDataTemp.push({...doc.data(), patiendId: doc.id, userName: userIdNameMap[doc.data().userId]});
-    });
-    //patientsDataTemp=patientsDataTemp.concat(patientsDataTemp).concat(patientsDataTemp);
-    patientsDataTemp.sort(function (a, b){
-      if(a.firstName+a.lastName > b.firstName+b.lastName){
-        return 1;
+      let lpd = "-";
+      if(doc.data().lastPeriodDate){
+        lpd = doc.data().lastPeriodDate.split('/')[1]+'/'+doc.data().lastPeriodDate.split('/')[0]+'/'+doc.data().lastPeriodDate.split('/')[2]
       }
-      return -1;
-    })
+      patientsDataTemp.push({...doc.data(), id: doc.id, 
+      createdOn: new Date(doc.data().createdOn.seconds * 1000), 
+      lastModifiedOn: new Date(doc.data().lastModifiedOn.seconds * 1000),
+      userName: userIdNameMap[doc.data().userId],
+      dateOfBirth: doc.data().dateOfBirth.split('/')[1]+'/'+doc.data().dateOfBirth.split('/')[0]+'/'+doc.data().dateOfBirth.split('/')[2],
+      lastPeriodDate: lpd
+      });
+    });
     setPatientsData(patientsDataTemp);
-    setNumOfPages(Math.ceil(patientsDataTemp.length/cardsPerPage));
+    
     setFilteredPatientsData(patientsDataTemp);
     setLoading(false);
   }
@@ -139,23 +105,19 @@ export default function PatientsDetails() {
     if(loading){
       getPatientsData();
     }
-    if(nameFilterChange){
-      filterUsingName(nameFilter)
-    }
   });
 
   return (
     <div>
-          <Box className="userFilterContainer">
-              <div>
-              <InputLabel id="simple-select-label">Filter by user</InputLabel>
-              </div>
+          <Box className="filterContainer">
+            <FormControl className="userFilter">
+              <InputLabel id="simple-select-label-1">User</InputLabel>
               <Select
-                labelId="simple-select-label"
+                labelId="simple-select-label-1"
                 id="simple-select"
                 label="User"
                 value = {userFilter}
-                onChange={handleFilterChange}
+                onChange={handleUserFilterChange}
               >
                 <MenuItem value = {-1} >No Filter</MenuItem>
                 {
@@ -164,54 +126,51 @@ export default function PatientsDetails() {
                 })
                 }
               </Select>
+            </FormControl>
+            <FormControl className="reportFilter">
+              <InputLabel id="simple-select-label-2">Report</InputLabel>
+              <Select
+                labelId="simple-select-label-2"
+                id="simple-select"
+                label="Report"
+                value = {reportFilter}
+                onChange={handleReportFilterChange}
+              >
+                <MenuItem value = {-1} >No Filter</MenuItem>
+                <MenuItem value = {0} >Pending</MenuItem>
+                <MenuItem value = {1} >Received</MenuItem>
+              </Select>
+            </FormControl>
+              <TextField
+              margin="normal"
+              className="name-search"
+              label="Search by patient name"
+              name="Name"
+              value={nameFilter}
+              onChange = {handleNameFilterChange}
+              />
               <Button
                 type="submit"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick = {handleFilterSubmit}
+                onClick = {handleFilterClear}
               >
-                Filter
+                Clear Filters
               </Button>
-              <TextField
-              margin="normal"
-              className="name-search"
-              label="Search by name"
-              name="Name"
-              value={nameFilter}
-              onChange = {handleNameFilter}
-              />
-
-              {//sort feature
-              }
-              {//<InputLabel id="simple-select-label">Sort by:</InputLabel>
-              }
-              <Select className="sortContainer"
-                labelId="simple-sort-label"
-                id="simple-sort"
-                label="Sort"
-                value = {userSort}
-                onChange={handleSortChange}
-              >
-                <MenuItem value = {0} >A-Z</MenuItem>
-                <MenuItem value = {1} >Z-A</MenuItem>
-                <MenuItem value = {2} >Date Created (Earliest First)</MenuItem>
-                <MenuItem value = {3} >Date Created (Latest First)</MenuItem>
-                <MenuItem value = {4} >Date Modified (Latest Modified First)</MenuItem>
-                <MenuItem value = {4} >Date Modified (Oldest Modified First)</MenuItem>
-              </Select>
           </Box>
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container rowSpacing={4}>
-        { filteredPatientsData.slice(cardsPerPage*(page-1),cardsPerPage*page).map((value) =>
-            {return <Grid className = 'patientCard' item xs='auto'>
-                <PatientCard patient={value}/>
-            </Grid>})
-        }
-      </Grid>
-      <div className='paginationContainer'>
-        {!loading &&
-        <Pagination count={numOfPages} color="secondary" onChange={(e,value)=>setPage(value)} />
-        }
+    <Box className = 'patientGridBox' sx={{ flexGrow: 1 }}>
+      <div className = "patientGridContainer" >
+      <DataGrid
+          className = "patientDataGrid"
+          onRowClick = {(row) => history.push('/patientprofile', { patient: row.row })}
+          rows={filteredPatientsData}
+          columns={columns}
+          pageSize={30}
+          rowsPerPageOptions={[30]}
+          rowHeight={60}
+          autoHeight={true}
+          disableExtendRowFullWidth={true}
+        />
       </div>
     </Box>
     </div>
