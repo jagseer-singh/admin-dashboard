@@ -1,16 +1,14 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import Pagination from '@mui/material/Pagination';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import FormControl from "@mui/material/FormControl";
 import { collection, getDocs } from "firebase/firestore";
 import * as React from 'react';
 import { db } from "../firebase";
-import PatientCard from './PatientCard';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import { useHistory } from "react-router-dom";
 
 const columns = [
@@ -31,33 +29,43 @@ export default function PatientsDetails() {
   const [users, setUsers] = React.useState([]);
   const [userFilter, setUserFilter] = React.useState(-1);
   const [nameFilter, setNameFilter] = React.useState('');
-  const [nameFilterChange, setNameFilterChange] = React.useState(false);
+  const [reportFilter, setReportFilter] = React.useState(-1);
 
-  const filterUsingName = (name) =>{
-    const patientDataTemp = patientsData.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(name.toLowerCase()));
-    setFilteredPatientsData(patientDataTemp);
-
-    setNameFilterChange(false);
-  };
-
-  const handleNameFilter = (event) => {
-    setNameFilter(event.target.value);
-    setNameFilterChange(true)
-  };
-
-  const handleFilterChange = (event) => {
-    setUserFilter(event.target.value);
-  };
-
-  const handleFilterSubmit = (event) => {
-    if(userFilter=== -1 ) {
-      setFilteredPatientsData(patientsData);
-    
-    } else {
-    const patientDataTemp = patientsData.filter((patient) => patient.userId === users[userFilter].userId);
-    setFilteredPatientsData(patientDataTemp);
-    
+  const applyFilters = (userF, nameF, reportF) => {
+    let filteredDataTemp = patientsData;
+    filteredDataTemp = filteredDataTemp.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(nameF.toLowerCase()));
+    if(userF !== -1){
+      filteredDataTemp = filteredDataTemp.filter((patient) => patient.userId === users[userF].userId);
     }
+    if(reportF !== -1){
+      filteredDataTemp = filteredDataTemp.filter((patient) => patient.received === reportF);
+    }
+    setFilteredPatientsData(filteredDataTemp);
+  }
+
+  const handleNameFilterChange = (event) => {
+    const name = event.target.value;
+    applyFilters(userFilter, name, reportFilter);
+    setNameFilter(name);
+  };
+
+  const handleReportFilterChange = (event) => {
+    const report = event.target.value;
+    applyFilters(userFilter, nameFilter, report);
+    setReportFilter(report);
+  };
+
+  const handleUserFilterChange = (event) => {
+    const user = event.target.value;
+    applyFilters(user, nameFilter, reportFilter);
+    setUserFilter(user);
+  };
+
+  const handleFilterClear = (event) => {
+    setUserFilter(-1);
+    setNameFilter('');
+    setReportFilter(-1);
+    applyFilters(-1, '', -1);
   };
 
   async function getPatientsData() {
@@ -94,27 +102,22 @@ export default function PatientsDetails() {
   }
   
   React.useEffect( () => {
-    console.log('Hi');
     if(loading){
       getPatientsData();
-    }
-    if(nameFilterChange){
-      filterUsingName(nameFilter)
     }
   });
 
   return (
     <div>
-          <Box className="userFilterContainer">
-              <div>
-              <InputLabel id="simple-select-label">Filter by user</InputLabel>
-              </div>
+          <Box className="filterContainer">
+            <FormControl className="userFilter">
+              <InputLabel id="simple-select-label-1">User</InputLabel>
               <Select
-                labelId="simple-select-label"
+                labelId="simple-select-label-1"
                 id="simple-select"
                 label="User"
                 value = {userFilter}
-                onChange={handleFilterChange}
+                onChange={handleUserFilterChange}
               >
                 <MenuItem value = {-1} >No Filter</MenuItem>
                 {
@@ -123,26 +126,42 @@ export default function PatientsDetails() {
                 })
                 }
               </Select>
+            </FormControl>
+            <FormControl className="reportFilter">
+              <InputLabel id="simple-select-label-2">Report</InputLabel>
+              <Select
+                labelId="simple-select-label-2"
+                id="simple-select"
+                label="Report"
+                value = {reportFilter}
+                onChange={handleReportFilterChange}
+              >
+                <MenuItem value = {-1} >No Filter</MenuItem>
+                <MenuItem value = {0} >Pending</MenuItem>
+                <MenuItem value = {1} >Received</MenuItem>
+              </Select>
+            </FormControl>
+              <TextField
+              margin="normal"
+              className="name-search"
+              label="Search by patient name"
+              name="Name"
+              value={nameFilter}
+              onChange = {handleNameFilterChange}
+              />
               <Button
                 type="submit"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick = {handleFilterSubmit}
+                onClick = {handleFilterClear}
               >
-                Filter
+                Clear Filters
               </Button>
-              <TextField
-              margin="normal"
-              className="name-search"
-              label="Search by name"
-              name="Name"
-              value={nameFilter}
-              onChange = {handleNameFilter}
-              />
           </Box>
     <Box className = 'patientGridBox' sx={{ flexGrow: 1 }}>
       <div className = "patientGridContainer" >
       <DataGrid
+          className = "patientDataGrid"
           onRowClick = {(row) => history.push('/patientprofile', { patient: row.row })}
           rows={filteredPatientsData}
           columns={columns}
@@ -150,6 +169,7 @@ export default function PatientsDetails() {
           rowsPerPageOptions={[30]}
           rowHeight={60}
           autoHeight={true}
+          disableExtendRowFullWidth={true}
         />
       </div>
     </Box>
