@@ -14,7 +14,7 @@ import { useHistory } from "react-router-dom";
 const columns = [
   { field: 'firstName', headerName: 'First name', width: 130 },
   { field: 'lastName', headerName: 'Last name', width: 130 },
-  { field: 'dateOfBirth', type: 'date', headerName: 'DOB (mm/dd/yyyy)', width: 170 },
+  { field: 'dateOfBirth', sortable: false, headerName: 'DOB (mm/dd/yyyy)', width: 170 },
   { field: 'gender', headerName: 'Gender', width: 100 },
   { field: 'createdOn', type: 'dateTime', headerName: 'Created On (mm/dd/yyyy)', width: 240 },
   { field: 'lastModifiedOn', type: 'dateTime', headerName: 'Last Modified On (mm/dd/yyyy)', width: 240 },
@@ -111,11 +111,11 @@ export default function PatientsDetails() {
     <div>
           <Box className="filterContainer">
             <FormControl className="userFilter">
-              <InputLabel id="simple-select-label-1">User</InputLabel>
+              <InputLabel id="simple-select-label-1">Created By</InputLabel>
               <Select
                 labelId="simple-select-label-1"
                 id="simple-select"
-                label="User"
+                label="Created By"
                 value = {userFilter}
                 onChange={handleUserFilterChange}
               >
@@ -128,11 +128,11 @@ export default function PatientsDetails() {
               </Select>
             </FormControl>
             <FormControl className="reportFilter">
-              <InputLabel id="simple-select-label-2">Report</InputLabel>
+              <InputLabel id="simple-select-label-2">Report Status</InputLabel>
               <Select
                 labelId="simple-select-label-2"
                 id="simple-select"
-                label="Report"
+                label="Report Status"
                 value = {reportFilter}
                 onChange={handleReportFilterChange}
               >

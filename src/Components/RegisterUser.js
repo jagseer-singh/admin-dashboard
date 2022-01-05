@@ -38,6 +38,9 @@ export default function RegisterUser() {
     const confirmPassword = data.get('confirmpassword');
     const firstName = data.get('firstName');
     const lastName = data.get('lastName');
+    const mobileNumber = data.get('mobileNumber');
+    const organisation = data.get('organisation');
+    const designation = data.get('designation');
 
     if(RadioValue === 'adduser') {
       if(password === confirmPassword) {
@@ -53,7 +56,10 @@ export default function RegisterUser() {
             name: fullName,
             email: email,
             role: "user",
-            active:1
+            active:1,
+            organisation: organisation,
+            mobileNumber: mobileNumber,
+            designation: designation
           });
           alert("User Registerd Successfully!!");
           history.push('/users')
@@ -163,6 +169,43 @@ export default function RegisterUser() {
                     name="lastName"
                     label="Last Name"
                     id="lastName"
+                  />
+                </Grid>
+                }
+                { 
+                RadioValue==='adduser' && 
+                  <Grid item xs={12}>
+                  <TextField
+                    required
+                    fullWidth
+                    name="mobileNumber"
+                    label="Mobile Number"
+                    id="mobileNumber"
+                    type="number"
+                  />
+                </Grid>
+                }
+                { 
+                RadioValue==='adduser' && 
+                  <Grid item xs={12}>
+                  <TextField
+                    required
+                    fullWidth
+                    name="organisation"
+                    label="Organisation"
+                    id="organisation"
+                  />
+                </Grid>
+                }
+                { 
+                RadioValue==='adduser' && 
+                  <Grid item xs={12}>
+                  <TextField
+                    required
+                    fullWidth
+                    name="designation"
+                    label="Designation"
+                    id="designation"
                   />
                 </Grid>
                 }
