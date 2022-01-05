@@ -108,7 +108,13 @@ export default function PatientProfile(props) {
       //const labReportDocRef = doc(db, "labReports", "123");
       const labReportSnap = await getDoc(labReportDocRef);
       if(labReportSnap.data()){
-        setLabReportData(labReportSnap.data());
+        const labReportDataTemp = labReportSnap.data();
+        for(const key in labReportDataTemp){
+          if(labReportDataTemp[key] === -1){
+            labReportDataTemp[key] = "-";
+          }
+        }
+        setLabReportData(labReportDataTemp);
       }
       setLoadingLabReport(false);
     }
