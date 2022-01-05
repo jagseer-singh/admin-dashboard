@@ -115,10 +115,32 @@
 
 .patientGridContainer {
   min-height: 100px !important; 
-  margin-left: 2% !important;
-  width: 100% !important; 
+  margin-left: 2% !important; 
 }
 
 .patientGridBox {
   margin-bottom: 20px;
+}
+
+.generalInfoTable {
+  width: fit-content !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.labReportTable {
+  width: fit-content !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.reportButtonContainer{
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+
+.patientProfileContainer{
+  padding-top: 10px !important;
+  padding-bottom: 0px !important;
 }

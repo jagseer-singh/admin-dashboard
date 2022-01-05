@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import Grid from '@mui/material/Grid';
@@ -8,10 +9,21 @@ import { getDownloadURL, ref } from "firebase/storage";
 import * as React from 'react';
 import { storage } from "../firebase";
 import Modal from "./Modal";
-
-const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_left', 'palm_right', 'tongue'];
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 const theme = createTheme();
+
+function createData(name, value) {
+  return { name, value };
+}
+
+const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_left', 'palm_right', 'tongue'];
 
 export default function PatientProfile(props) {
     let gender,socioEco,labReportStatus;
@@ -32,7 +44,7 @@ export default function PatientProfile(props) {
         socioEco='Below Poverty Line';
     }
     else{
-        socioEco='Preferred Not to Share';
+        socioEco='Preferred Not To Share';
     }
 
     if(props.location.state.patient.received===0){
@@ -41,6 +53,40 @@ export default function PatientProfile(props) {
     else{
         labReportStatus='Received';
     }
+
+    const [showLabReport, setShowLabReport]=React.useState(false);
+
+    const handleShowReport = (event) => {
+      setShowLabReport(!showLabReport);
+    };
+
+    const rows = [
+      createData('Date of Birth (mm/dd/yyyy)', props.location.state.patient.dateOfBirth),
+      createData('Gender', gender),
+      createData('Height', props.location.state.patient.height),
+      createData('Weight', props.location.state.patient.weight),
+      createData('Socio-Economic Status', socioEco),
+      createData('Gestation Period', props.location.state.patient.gestationPeriod),
+      createData('Last Period Date (mm/dd/yyyy)', props.location.state.patient.lastPeriodDate),
+      createData('Lab Report Status', labReportStatus),
+      createData('Collected by', props.location.state.patient.userName),
+      createData('Created On',props.location.state.patient.createdOn.toDateString()+' '+props.location.state.patient.createdOn.toTimeString()),
+      createData('Last Modiefied On',props.location.state.patient.lastModifiedOn.toDateString()+' '+props.location.state.patient.lastModifiedOn.toTimeString()),
+    ];
+
+    const labReportRows = [
+      {
+        "lab_report_field_crp":-1,
+        "lab_report_field_hb":11,
+        "lab_report_field_rbc":158000,
+        "lab_report_field_serum_b12":-1,
+        "lab_report_field_serum_ferritin":-1,
+        "lab_report_field_serum_folate":-1,
+        "lab_report_field_serum_iron":188,
+        "lab_report_field_smear":"Micro",
+        "lab_report_field_tibc":-1,
+      }
+    ];
 
     const [selectedImg, setSelectedImg] = React.useState(null);
 
@@ -77,6 +123,7 @@ export default function PatientProfile(props) {
       <CssBaseline />
       <main>
         <Box
+          className='patientProfileContainer'
           sx={{
             bgcolor: 'background.paper',
             pt: 8,
@@ -93,25 +140,65 @@ export default function PatientProfile(props) {
             >
               {props.location.state.patient.firstName} {props.location.state.patient.lastName}
             </Typography>
-            <Typography>
-                Gender: {gender}
-            </Typography>
-            <Typography>
-                DOB: {props.location.state.patient.dateOfBirth}
-            </Typography>
-            <Typography>
-                Collected By: {props.location.state.patient.userName}
-            </Typography>
-            <Typography>
-                Socio-Economic Status: {socioEco}
-            </Typography>
-            <Typography>
-                Lab Report Status: {labReportStatus}
-            </Typography>
-            <Typography>
-                Patient Created On: {props.location.state.patient.createdOn.toDateString()} {props.location.state.patient.createdOn.toLocaleTimeString()}
-            </Typography>
           </Container>
+            <TableContainer className='generalInfoTable' component={Paper}>
+              <Table size="small" aria-label="a dense table">
+                <TableBody>
+                  {rows.map((row) => (
+                    <TableRow
+                      key={row.name}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">{row.name}</TableCell>
+                      <TableCell align="right">{row.value}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <div className='reportButtonContainer'>
+            <Button onClick={handleShowReport} type="submit" variant="contained">
+              {showLabReport?"Hide":"Show"} Lab Report
+            </Button>
+            </div>
+            {
+              showLabReport && 
+            <TableContainer className='labReportTable' component={Paper}>
+              <Table width="800px" size="small" aria-label="a dense table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Hb</TableCell>
+                    <TableCell>RBC Count</TableCell>
+                    <TableCell>Smear</TableCell>
+                    <TableCell>Serum Iron</TableCell>
+                    <TableCell>Ferritin</TableCell>
+                    <TableCell>TIBC</TableCell>
+                    <TableCell>Serum Folate</TableCell>
+                    <TableCell>B12</TableCell>
+                    <TableCell>CRP</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {labReportRows.map((row) => (
+                    <TableRow
+                      key={row.lab_report_field_crp}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell align="right">{row.lab_report_field_hb} gm/dl</TableCell>
+                      <TableCell align="right">{row.lab_report_field_rbc} mm/cmm</TableCell>
+                      <TableCell align="right">{row.lab_report_field_smear}</TableCell>
+                      <TableCell align="right">{row.lab_report_field_serum_iron} mcg/dl</TableCell>
+                      <TableCell align="right">{row.lab_report_field_serum_ferritin} ng/ml</TableCell>
+                      <TableCell align="right">{row.lab_report_field_tibc} mcg/dl</TableCell>
+                      <TableCell align="right">{row.lab_report_field_serum_folate} ng/ml</TableCell>
+                      <TableCell align="right">{row.lab_report_field_serum_b12}</TableCell>
+                      <TableCell align="right">{row.lab_report_field_crp}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            }
         </Box>
         {console.log(props)}
         <Container sx={{ py: 8 }} maxWidth="md">

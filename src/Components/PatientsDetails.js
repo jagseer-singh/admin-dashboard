@@ -16,10 +16,10 @@ import { useHistory } from "react-router-dom";
 const columns = [
   { field: 'firstName', headerName: 'First name', width: 130 },
   { field: 'lastName', headerName: 'Last name', width: 130 },
-  { field: 'dateOfBirth', type: 'date', headerName: 'DOB', width: 130 },
+  { field: 'dateOfBirth', type: 'date', headerName: 'DOB (mm/dd/yyyy)', width: 170 },
   { field: 'gender', headerName: 'Gender', width: 100 },
-  { field: 'createdOn', type: 'dateTime', headerName: 'Created On', width: 200 },
-  { field: 'lastModifiedOn', type: 'dateTime', headerName: 'Last Modified On', width: 200 },
+  { field: 'createdOn', type: 'dateTime', headerName: 'Created On (mm/dd/yyyy)', width: 240 },
+  { field: 'lastModifiedOn', type: 'dateTime', headerName: 'Last Modified On (mm/dd/yyyy)', width: 240 },
   { field: 'userName', headerName: 'Created By', width: 130 },
 ];
 
@@ -75,11 +75,16 @@ export default function PatientsDetails() {
     const patientSnap = await getDocs(patientCollRef);
     let patientsDataTemp = [];
     patientSnap.docs.forEach((doc) => {
+      let lpd = "-";
+      if(doc.data().lastPeriodDate){
+        lpd = doc.data().lastPeriodDate.split('/')[1]+'/'+doc.data().lastPeriodDate.split('/')[0]+'/'+doc.data().lastPeriodDate.split('/')[2]
+      }
       patientsDataTemp.push({...doc.data(), id: doc.id, 
       createdOn: new Date(doc.data().createdOn.seconds * 1000), 
       lastModifiedOn: new Date(doc.data().lastModifiedOn.seconds * 1000),
       userName: userIdNameMap[doc.data().userId],
-      dateOfBirth: doc.data().dateOfBirth.split('/')[1]+'/'+doc.data().dateOfBirth.split('/')[0]+'/'+doc.data().dateOfBirth.split('/')[2]
+      dateOfBirth: doc.data().dateOfBirth.split('/')[1]+'/'+doc.data().dateOfBirth.split('/')[0]+'/'+doc.data().dateOfBirth.split('/')[2],
+      lastPeriodDate: lpd
       });
     });
     setPatientsData(patientsDataTemp);
