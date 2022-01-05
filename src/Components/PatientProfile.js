@@ -6,8 +6,9 @@ import Grid from '@mui/material/Grid';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { getDownloadURL, ref } from "firebase/storage";
+import { doc, getDoc } from "firebase/firestore";
 import * as React from 'react';
-import { storage } from "../firebase";
+import { storage, db } from "../firebase";
 import Modal from "./Modal";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -26,6 +27,22 @@ function createData(name, value) {
 const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_left', 'palm_right', 'tongue'];
 
 export default function PatientProfile(props) {
+    const [showLabReport, setShowLabReport]=React.useState(false);
+    const [selectedImg, setSelectedImg] = React.useState(null);
+    const [loadingLabReport, setLoadingLabReport] = React.useState(true);
+    const [loadingImages, setLoadingImages] = React.useState(true);
+    const [labReportData, setLabReportData] = React.useState({
+      "lab_report_field_crp":"-",
+      "lab_report_field_hb":"-",
+      "lab_report_field_rbc":"-",
+      "lab_report_field_serum_b12":"-",
+      "lab_report_field_serum_ferritin":"-",
+      "lab_report_field_serum_folate":"-",
+      "lab_report_field_serum_iron":"-",
+      "lab_report_field_smear":"-",
+      "lab_report_field_tibc":"-",
+    });
+
     let gender,socioEco,labReportStatus;
     if(props.location.state.patient.gender==='M'){
         gender='Male';
@@ -54,8 +71,6 @@ export default function PatientProfile(props) {
         labReportStatus='Received';
     }
 
-    const [showLabReport, setShowLabReport]=React.useState(false);
-
     const handleShowReport = (event) => {
       setShowLabReport(!showLabReport);
     };
@@ -74,7 +89,7 @@ export default function PatientProfile(props) {
       createData('Last Modiefied On',props.location.state.patient.lastModifiedOn.toDateString()+' '+props.location.state.patient.lastModifiedOn.toTimeString()),
     ];
 
-    const labReportRows = [
+    /*const labReportRows = [
       {
         "lab_report_field_crp":-1,
         "lab_report_field_hb":11,
@@ -86,17 +101,23 @@ export default function PatientProfile(props) {
         "lab_report_field_smear":"Micro",
         "lab_report_field_tibc":-1,
       }
-    ];
+    ];*/
 
-    const [selectedImg, setSelectedImg] = React.useState(null);
+    async function getLabReport() {
+      const labReportDocRef = doc(db, "labReports", props.location.state.patient.id);
+      //const labReportDocRef = doc(db, "labReports", "123");
+      const labReportSnap = await getDoc(labReportDocRef);
+      if(labReportSnap.data()){
+        setLabReportData(labReportSnap.data());
+      }
+      setLoadingLabReport(false);
+    }
 
-    React.useEffect( () => {
-        window.scrollTo(0, 0);
-        bodyParts.forEach((bodyPart)=> {
-            const urlString = `${bodyPart}/${props.location.state.patient.id}`;
-            console.log(urlString);
+    async function getImages() {
+      bodyParts.forEach((bodyPart)=> {
+        const urlString = `${bodyPart}/${props.location.state.patient.id}`;
+        console.log(urlString);
         getDownloadURL(ref(storage, urlString))
-        //getDownloadURL(ref(storage, 'left_eye/Rtfat90PqpMkcD3wWcnT'))
         .then((url) => {
           const xhr = new XMLHttpRequest();
           
@@ -114,12 +135,22 @@ export default function PatientProfile(props) {
           const img = document.getElementById(bodyPart);
           img.setAttribute('alt', 'NOT FOUND')
           img.setAttribute('src', 'image/imgNotFound.png')
-    });
-  });
-});
+        });
+      });
+      setLoadingImages(false);
+    }
+
+    React.useEffect( () => {
+        window.scrollTo(0, 0);
+        if(loadingLabReport) {
+          getLabReport();
+        }
+        if(loadingImages) {
+          getImages();
+        }
+      });
   return (
     <ThemeProvider theme={theme}>
-        {console.log(props)}
       <CssBaseline />
       <main>
         <Box
@@ -157,7 +188,7 @@ export default function PatientProfile(props) {
               </Table>
             </TableContainer>
             <div className='reportButtonContainer'>
-            <Button onClick={handleShowReport} type="submit" variant="contained">
+            <Button onClick={handleShowReport} type="submit" variant="contained" disabled={loadingLabReport}>
               {showLabReport?"Hide":"Show"} Lab Report
             </Button>
             </div>
@@ -179,28 +210,25 @@ export default function PatientProfile(props) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {labReportRows.map((row) => (
                     <TableRow
-                      key={row.lab_report_field_crp}
+                      key={labReportData.lab_report_field_crp}
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
-                      <TableCell align="right">{row.lab_report_field_hb} gm/dl</TableCell>
-                      <TableCell align="right">{row.lab_report_field_rbc} mm/cmm</TableCell>
-                      <TableCell align="right">{row.lab_report_field_smear}</TableCell>
-                      <TableCell align="right">{row.lab_report_field_serum_iron} mcg/dl</TableCell>
-                      <TableCell align="right">{row.lab_report_field_serum_ferritin} ng/ml</TableCell>
-                      <TableCell align="right">{row.lab_report_field_tibc} mcg/dl</TableCell>
-                      <TableCell align="right">{row.lab_report_field_serum_folate} ng/ml</TableCell>
-                      <TableCell align="right">{row.lab_report_field_serum_b12}</TableCell>
-                      <TableCell align="right">{row.lab_report_field_crp}</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_hb} gm/dl</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_rbc} mm/cmm</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_smear}</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_serum_iron} mcg/dl</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_serum_ferritin} ng/ml</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_tibc} mcg/dl</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_serum_folate} ng/ml</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_serum_b12}</TableCell>
+                      <TableCell align="right">{labReportData.lab_report_field_crp}</TableCell>
                     </TableRow>
-                  ))}
                 </TableBody>
               </Table>
             </TableContainer>
             }
         </Box>
-        {console.log(props)}
         <Container sx={{ py: 8 }} maxWidth="md">
           {/* End hero unit */}
           <Grid container spacing={4}>
