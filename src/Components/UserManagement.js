@@ -26,7 +26,10 @@ export default function UserManagement (props){
         usersDataTemp.push({...doc.data(), userId: doc.id});}
       });
       usersDataTemp.sort(function (a, b){
-        if(a.email > b.email){
+        if(!a.shortHand){
+          return 1;
+        }
+        if(a.shortHand < b.shortHand){
           return 1;
         }
         return -1;
@@ -67,7 +70,7 @@ export default function UserManagement (props){
             <TableCell >E-mail</TableCell>
             <TableCell align="right">Name</TableCell>
             <TableCell align="right">Role</TableCell>
-            <TableCell align="right">UserID</TableCell>
+            <TableCell align="right">ShortHand</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -81,7 +84,7 @@ export default function UserManagement (props){
               </TableCell>
               <TableCell align="right">{user.name}</TableCell>
               <TableCell align="right">{user.role}</TableCell>
-              <TableCell align="right">{user.userId}</TableCell>
+              <TableCell align="right">{user.shortHand}</TableCell>
             </TableRow>
           ))}
         </TableBody>
