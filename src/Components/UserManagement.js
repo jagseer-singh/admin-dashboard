@@ -1,11 +1,4 @@
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import { collection, getDocs } from "firebase/firestore";
 import React from "react";
 import { useHistory } from "react-router-dom";
@@ -35,6 +28,15 @@ export default function UserManagement (props){
       usersSnap.docs.forEach((doc) => {
         if(doc.data().active===1){
         usersDataTemp.push({...doc.data(), userId: doc.id, id:doc.id});}
+      });
+      usersDataTemp.sort(function (a, b){
+        if(!a.shortHand){
+          return 1;
+        }
+        if(a.shortHand < b.shortHand){
+          return 1;
+        }
+        return -1;
       });
       setUsersData(usersDataTemp);
       setLoading(false)

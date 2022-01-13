@@ -45,8 +45,10 @@ export default function RegisterUser() {
     const firstName = data.get('firstName');
     const lastName = data.get('lastName');
     const mobileNumber = data.get('mobileNumber');
-    
     const designation = data.get('designation');
+
+    const usersCollRef = collection(db, "users");
+    const usersSnap = await getDocs(usersCollRef);
 
     if(RadioValue === 'adduser') {
       if(mobileNumber.length!==10){
@@ -62,6 +64,14 @@ export default function RegisterUser() {
           );
           console.log(user);
           const fullName = firstName + " " + lastName;
+          let maxShortHand = 0;
+          usersSnap.docs.forEach((doc) => {
+            if(doc.data().shortHand && parseInt(doc.data().shortHand)>maxShortHand){
+              maxShortHand = parseInt(doc.data().shortHand);
+            }
+          })
+          maxShortHand += 1;
+          const userShorthand = ("000" + maxShortHand).slice(-4);
           await setDoc(doc(db, "users", user.user.uid), {
             name: fullName,
             email: email,
@@ -69,9 +79,10 @@ export default function RegisterUser() {
             active:1,
             organisation: organisation,
             mobileNumber: mobileNumber,
-            designation: designation
+            designation: designation,
+            shortHand: userShorthand
           });
-          alert("User Registered Successfully!!");
+          alert(`${fullName} registered successfully with shortHand: ${userShorthand}`);
           history.push('/users')
         } catch (error) {
           alert(error.message);
@@ -82,8 +93,6 @@ export default function RegisterUser() {
       }
     }
     else{
-      const usersCollRef = collection(db, "users");
-      const usersSnap = await getDocs(usersCollRef);
       let userRole = null;
       let userId = null;
       usersSnap.docs.forEach((doc) => {
@@ -235,7 +244,7 @@ export default function RegisterUser() {
                     >
                       {
                         orgData.map((org) => {
-                          return <MenuItem value={org.org_id}>{org.org_id}-{org.org_name}</MenuItem>
+                          return <MenuItem value={org.org_id}>{org.org_id} / {org.org_name}</MenuItem>
                       })
                       }
                     </Select>
