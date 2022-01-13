@@ -105,7 +105,7 @@ export default function RegisterUser() {
       });
     alert(`Successfully Registered ${org_name}!` );
     setLoading(false);
-
+    history.push('/orgmanagement');
   };
   async function getOrgData(){
     const orgCollRef = collection(db, "organisations");

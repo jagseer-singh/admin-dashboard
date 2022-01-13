@@ -49,6 +49,10 @@ export default function RegisterUser() {
     const designation = data.get('designation');
 
     if(RadioValue === 'adduser') {
+      if(mobileNumber.length!==10){
+        alert('Mobile number not correct!');
+        return;
+      }
       if(password === confirmPassword) {
         try {
           const user = await createUserWithEmailAndPassword(
