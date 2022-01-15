@@ -84,10 +84,13 @@ const NavBar = () => {
               }}
             >
                 <MenuItem key='PatientsDetails' onClick={() => history.push('/patientsdetails')}>
-                  <Typography textAlign="center">Patients' Details</Typography>
+                  <Typography textAlign="center">Patients' Details </Typography>
                 </MenuItem>
                 <MenuItem key='UserManagement' onClick={() => history.push('/users')}>
-                  <Typography textAlign="center">User Management</Typography>
+                  <Typography textAlign="center">User Management </Typography>
+                </MenuItem>
+                <MenuItem key='OrgManagement' onClick={() => history.push('/orgmanagement')}>
+                  <Typography textAlign="center">Organisations </Typography>
                 </MenuItem>
                 <MenuItem key='Logout' onClick={logout}>
                   <Typography textAlign="center">Logout</Typography>
@@ -116,6 +119,13 @@ const NavBar = () => {
                 sx={{ my: 2, color: 'white', display: 'block' }}
             >
                 User Management
+            </Button>
+            <Button
+                key='OrgManagement'
+                onClick={() => history.push('/orgmanagement')}
+                sx={{ my: 2, color: 'white', display: 'block' }}
+            >
+                Organisations
             </Button>
             <Button
                 key='Logout'

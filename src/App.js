@@ -9,6 +9,8 @@ import PatientsDetails from './Components/PatientsDetails';
 import ProtectedRoute from "./Components/ProtectedRoute";
 import UserManagement from "./Components/UserManagement";
 import PatientProfile from "./Components/PatientProfile";
+import RegisterOrg from "./Components/RegisterOrg";
+import OrgManagement from "./Components/OrgManagement";
 
 function App() {
   return (
@@ -21,7 +23,9 @@ function App() {
             <ProtectedRoute path="/registeruser" component={RegisterUser}/>
             <ProtectedRoute path="/patientsdetails" component={PatientsDetails}/>
             <ProtectedRoute path="/users" component={UserManagement}/>
+            <ProtectedRoute path="/orgmanagement" component={OrgManagement}/>
             <ProtectedRoute path="/patientprofile" component={PatientProfile}/>
+            <ProtectedRoute path="/registerorg" component={RegisterOrg}/>
           </div>
         </Switch>
     </Router>

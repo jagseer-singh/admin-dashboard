@@ -28,6 +28,7 @@ const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_lef
 
 export default function PatientProfile(props) {
     const [showLabReport, setShowLabReport]=React.useState(false);
+    const [scrollToTop, setScrollToTop] = React.useState(true);
     const [selectedImg, setSelectedImg] = React.useState(null);
     const [loadingLabReport, setLoadingLabReport] = React.useState(true);
     const [loadingImages, setLoadingImages] = React.useState(true);
@@ -147,7 +148,10 @@ export default function PatientProfile(props) {
     }
 
     React.useEffect( () => {
-        window.scrollTo(0, 0);
+        if(scrollToTop){
+          window.scrollTo(0, 0);
+          setScrollToTop(false);
+        }
         if(loadingLabReport) {
           getLabReport();
         }

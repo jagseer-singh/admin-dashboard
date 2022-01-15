@@ -8,6 +8,9 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import Grid from '@mui/material/Grid';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -25,7 +28,10 @@ const theme = createTheme();
 export default function RegisterUser() {
 
   const [RadioValue, setRadioValue] = React.useState('adduser');
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(false);
+  const [loadOrgData, setLoadOrgData] = React.useState(true);
+  const [orgData, setOrgData] = React.useState([]);
+  const [organisation, setOrganisation] = React.useState();
   const history = useHistory();
 
   async function handleSubmit (event) {
@@ -39,10 +45,16 @@ export default function RegisterUser() {
     const firstName = data.get('firstName');
     const lastName = data.get('lastName');
     const mobileNumber = data.get('mobileNumber');
-    const organisation = data.get('organisation');
     const designation = data.get('designation');
 
+    const usersCollRef = collection(db, "users");
+    const usersSnap = await getDocs(usersCollRef);
+
     if(RadioValue === 'adduser') {
+      if(mobileNumber.length!==10){
+        alert('Mobile number not correct!');
+        return;
+      }
       if(password === confirmPassword) {
         try {
           const user = await createUserWithEmailAndPassword(
@@ -52,6 +64,14 @@ export default function RegisterUser() {
           );
           console.log(user);
           const fullName = firstName + " " + lastName;
+          let maxShortHand = 0;
+          usersSnap.docs.forEach((doc) => {
+            if(doc.data().shortHand && parseInt(doc.data().shortHand)>maxShortHand){
+              maxShortHand = parseInt(doc.data().shortHand);
+            }
+          })
+          maxShortHand += 1;
+          const userShorthand = ("000" + maxShortHand).slice(-4);
           await setDoc(doc(db, "users", user.user.uid), {
             name: fullName,
             email: email,
@@ -59,9 +79,10 @@ export default function RegisterUser() {
             active:1,
             organisation: organisation,
             mobileNumber: mobileNumber,
-            designation: designation
+            designation: designation,
+            shortHand: userShorthand
           });
-          alert("User Registerd Successfully!!");
+          alert(`${fullName} registered successfully with shortHand: ${userShorthand}`);
           history.push('/users')
         } catch (error) {
           alert(error.message);
@@ -72,8 +93,6 @@ export default function RegisterUser() {
       }
     }
     else{
-      const usersCollRef = collection(db, "users");
-      const usersSnap = await getDocs(usersCollRef);
       let userRole = null;
       let userId = null;
       usersSnap.docs.forEach((doc) => {
@@ -105,6 +124,32 @@ export default function RegisterUser() {
     setRadioValue(event.target.value);
   };
 
+  const handleOrganisationChange = (event) => {
+    const org_temp = event.target.value;
+    setOrganisation(org_temp);
+    console.log(org_temp);
+  };
+
+  async function getOrgData() {
+    const orgCollRef = collection(db, "organisations");
+    const orgSnap = await getDocs(orgCollRef);
+    const orgs = [];
+    orgSnap.docs.forEach((doc) => {
+      orgs.push({...doc.data()}); 
+    });
+    if(orgs && orgs[0]){
+      setOrganisation(orgs[0].org_id);
+    }
+    setOrgData(orgs);
+    setLoadOrgData(false);
+  }
+
+  React.useEffect( () => {
+    if(loadOrgData){
+      getOrgData();
+    }
+  });
+
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
@@ -121,7 +166,7 @@ export default function RegisterUser() {
           <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
             <AssignmentIcon />
           </Avatar>
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
               <FormControl component="fieldset">
@@ -186,15 +231,24 @@ export default function RegisterUser() {
                 </Grid>
                 }
                 { 
-                RadioValue==='adduser' && 
+                RadioValue==='adduser' && !loadOrgData && 
                   <Grid item xs={12}>
-                  <TextField
-                    required
-                    fullWidth
-                    name="organisation"
-                    label="Organisation"
-                    id="organisation"
-                  />
+                  <FormControl className="organisationSelect">
+                    <InputLabel id="simple-select-label-1">Organisation</InputLabel>
+                    <Select
+                      labelId="simple-select-label-1"
+                      id="simple-select"
+                      label="Organisation"
+                      value = {organisation}
+                      onChange={handleOrganisationChange}
+                    >
+                      {
+                        orgData.map((org) => {
+                          return <MenuItem value={org.org_id}>{org.org_id} / {org.org_name}</MenuItem>
+                      })
+                      }
+                    </Select>
+                  </FormControl>
                 </Grid>
                 }
                 { 
