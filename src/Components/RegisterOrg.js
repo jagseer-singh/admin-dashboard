@@ -171,6 +171,7 @@ export default function RegisterUser() {
                     name="org_id"
                     label="Organisation ID"
                     id="org_id"
+                    inputProps={{ maxlength: 4, minlength: 4 }}
                   />
                 </Grid>
             </Grid>

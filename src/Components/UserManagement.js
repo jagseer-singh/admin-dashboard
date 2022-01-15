@@ -6,12 +6,13 @@ import { db } from "../firebase";
 import { DataGrid } from '@mui/x-data-grid';
 
 const columns = [
-  { field: 'name', headerName: 'Name', width: 100 },
-  { field: 'email', headerName: 'Email', width: 100 },
-  { field: 'role', headerName: 'Role', width: 100 },
-  { field: 'organisation', headerName: 'Organisation', width: 100 },
-  { field: 'designation', headerName: 'Designation', width: 100 },
-  { field: 'mobileNumber', headerName: 'Mobile Number', width: 100 },
+  { field: 'shortHand', headerName: 'Short Hand', width: 123 },
+  { field: 'name', headerName: 'Name', width: 225 },
+  { field: 'email', headerName: 'Email', width: 300 },
+  { field: 'role', headerName: 'Role', width: 150 },
+  { field: 'organisation', headerName: 'Organisation', width: 350 },
+  { field: 'designation', headerName: 'Designation', width: 200 },
+  { field: 'mobileNumber', headerName: 'Mobile Number', width: 150 },
 ];
 
 
