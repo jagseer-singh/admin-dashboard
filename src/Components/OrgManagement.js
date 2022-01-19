@@ -64,6 +64,7 @@ export default function PatientsDetails() {
                 rows={orgData}
                 columns={columns}
                 pageSize={30}
+                loading = {loading}
                 rowsPerPageOptions={[30]}
                 rowHeight={60}
                 autoHeight={true}
