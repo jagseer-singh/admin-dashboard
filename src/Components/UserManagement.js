@@ -55,7 +55,6 @@ export default function UserManagement (props){
     
     return (
         <div>
-        { !loading &&
             <div>
                 <div className="addRevokeButtonContainer">
         <Button onClick={handleSubmit}
@@ -75,6 +74,7 @@ export default function UserManagement (props){
           rows={usersData}
           columns={columns}
           pageSize={30}
+          loading = {loading}
           rowsPerPageOptions={[30]}
           rowHeight={60}
           autoHeight={true}
@@ -82,7 +82,6 @@ export default function UserManagement (props){
           />
         </div>
         </div>
-        }
         </div>
     )
 };
