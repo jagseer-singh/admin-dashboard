@@ -46,14 +46,8 @@
   margin-right: 5% !important;
 }
 
-.userTable{
-  width: fit-content !important;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .orgTable{
-  width: 1500px !important;
+  max-width: 1500px !important;
   margin-left: auto;
   margin-right: auto;
 }
@@ -92,7 +86,7 @@
 }
 
 .patientDataGrid{
-  width:1141px;
+  max-width:1281px;
 }
 
 .backdrop{

@@ -12,13 +12,13 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useHistory } from "react-router-dom";
 
 const columns = [
-  { field: 'firstName', headerName: 'First name', width: 130 },
-  { field: 'lastName', headerName: 'Last name', width: 130 },
-  { field: 'dateOfBirth', sortable: false, headerName: 'DOB (mm/dd/yyyy)', width: 170 },
+  { field: 'firstName', headerName: 'First name', width: 160 },
+  { field: 'lastName', headerName: 'Last name', width: 160 },
+  { field: 'dateOfBirth', sortable: false, headerName: 'DOB (mm/dd/yyyy)', width: 180 },
   { field: 'gender', headerName: 'Gender', width: 100 },
-  { field: 'createdOn', type: 'dateTime', headerName: 'Created On (mm/dd/yyyy)', width: 240 },
-  { field: 'lastModifiedOn', type: 'dateTime', headerName: 'Last Modified On (mm/dd/yyyy)', width: 240 },
-  { field: 'userName', headerName: 'Created By', width: 130 },
+  { field: 'createdOn', type: 'dateTime', headerName: 'Created On (mm/dd/yyyy)', width: 250 },
+  { field: 'lastModifiedOn', type: 'dateTime', headerName: 'Last Modified On (mm/dd/yyyy)', width: 250 },
+  { field: 'userName', headerName: 'Created By', width: 180 },
 ];
 
 export default function PatientsDetails() {
@@ -35,7 +35,7 @@ export default function PatientsDetails() {
     let filteredDataTemp = patientsData;
     filteredDataTemp = filteredDataTemp.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(nameF.toLowerCase()));
     if(userF !== -1){
-      filteredDataTemp = filteredDataTemp.filter((patient) => patient.userId === users[userF].userId);
+      filteredDataTemp = filteredDataTemp.filter((patient) => patient.creatorUserId === users[userF].userId);
     }
     if(reportF !== -1){
       filteredDataTemp = filteredDataTemp.filter((patient) => patient.received === reportF);
@@ -90,7 +90,7 @@ export default function PatientsDetails() {
       patientsDataTemp.push({...doc.data(), id: doc.id, 
       createdOn: new Date(doc.data().createdOn.seconds * 1000), 
       lastModifiedOn: new Date(doc.data().lastModifiedOn.seconds * 1000),
-      userName: userIdNameMap[doc.data().userId],
+      userName: userIdNameMap[doc.data().creatorUserId],
       dateOfBirth: doc.data().dateOfBirth.split('/')[1]+'/'+doc.data().dateOfBirth.split('/')[0]+'/'+doc.data().dateOfBirth.split('/')[2],
       lastPeriodDate: lpd
       });
@@ -158,21 +158,22 @@ export default function PatientsDetails() {
                 Clear Filters
               </Button>
           </Box>
-    <Box className = 'patientGridBox' sx={{ flexGrow: 1 }}>
-      <div className = "patientGridContainer" >
-      <DataGrid
-          className = "patientDataGrid"
-          onRowClick = {(row) => history.push('/patientprofile', { patient: row.row })}
-          rows={filteredPatientsData}
-          columns={columns}
-          pageSize={30}
-          rowsPerPageOptions={[30]}
-          rowHeight={60}
-          autoHeight={true}
-          disableExtendRowFullWidth={true}
-        />
-      </div>
-    </Box>
+      <Box className = 'patientGridBox' sx={{ flexGrow: 1 }}>
+        <div className = "patientGridContainer" >
+        <DataGrid
+            className = "patientDataGrid"
+            onRowClick = {(row) => history.push('/patientprofile', { patient: row.row })}
+            rows={filteredPatientsData}
+            columns={columns}
+            pageSize={30}
+            loading = {loading}
+            rowsPerPageOptions={[30]}
+            rowHeight={60}
+            autoHeight={true}
+            disableExtendRowFullWidth={true}
+          />
+        </div>
+      </Box>
     </div>
   );
 }
