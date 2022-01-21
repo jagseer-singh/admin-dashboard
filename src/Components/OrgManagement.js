@@ -60,6 +60,7 @@ export default function PatientsDetails() {
       <div>
             <h3>Registered Organisations</h3>
             <DataGrid
+                disableSelectionOnClick
                 className = "orgTable"
                 rows={orgData}
                 columns={columns}

@@ -79,6 +79,7 @@ export default function UserManagement (props){
           rowHeight={60}
           autoHeight={true}
           disableExtendRowFullWidth={true}
+          disableSelectionOnClick
           />
         </div>
         </div>
