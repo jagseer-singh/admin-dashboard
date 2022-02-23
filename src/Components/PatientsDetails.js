@@ -7,9 +7,11 @@ import TextField from '@mui/material/TextField';
 import FormControl from "@mui/material/FormControl";
 import { collection, getDocs } from "firebase/firestore";
 import * as React from 'react';
-import { db } from "../firebase";
+import { db,storage } from "../firebase";
 import { DataGrid } from '@mui/x-data-grid';
 import { useHistory } from "react-router-dom";
+import { deleteDoc, doc } from "firebase/firestore";
+import { ref, deleteObject } from "firebase/storage"
 
 const columns = [
   { field: 'firstName', headerName: 'First name', width: 160 },
@@ -30,6 +32,8 @@ export default function PatientsDetails() {
   const [userFilter, setUserFilter] = React.useState(-1);
   const [nameFilter, setNameFilter] = React.useState('');
   const [reportFilter, setReportFilter] = React.useState(-1);
+  const [selectedPatients, setSelectedPatients] = React.useState([]);
+  const [deletingPatients, setDeletingPatients] = React.useState(false);
 
   const applyFilters = (userF, nameF, reportF) => {
     let filteredDataTemp = patientsData;
@@ -66,6 +70,54 @@ export default function PatientsDetails() {
     setNameFilter('');
     setReportFilter(-1);
     applyFilters(-1, '', -1);
+  };
+
+  const handleDeletePatients = async() => {
+    setDeletingPatients(true);
+    const imagesCollRef = collection(db, "images");
+    const imagesSnap = await getDocs(imagesCollRef);
+    const patientIdImageIdMap = {};
+    const imageRefMap = {};
+    imagesSnap.docs.forEach((doc) => {
+      imageRefMap[doc.id] = doc.data().firebaseRef;
+      if(patientIdImageIdMap[doc.data().patientId]){
+        patientIdImageIdMap[doc.data().patientId].push(doc.id);
+      }
+      else{
+        patientIdImageIdMap[doc.data().patientId]= [doc.id];
+      }
+    });
+    if(selectedPatients.length > 0){
+      for(const patientId of selectedPatients){
+
+        await deleteDoc(doc(db, "firstImpression", patientId));
+        await deleteDoc(doc(db, "labReports", patientId));
+        
+        if(patientIdImageIdMap[patientId]){
+          for(const imageId of patientIdImageIdMap[patientId]){
+            
+            const desertRef = ref(storage, imageRefMap[imageId]);
+            deleteObject(desertRef).then(() => {
+              // File deleted successfully
+              console.log("Image Delete:",imageRefMap[imageId]);
+            }).catch((error) => {
+              // Uh-oh, an error occurred!
+              alert("Error while deleting image from storage", imageRefMap[imageId]);
+            });
+
+            await deleteDoc(doc(db,"images",imageId));
+          }
+        }
+        await deleteDoc(doc(db, "patients", patientId));
+      }
+      setLoading(true);
+      alert("Patients successfully deleted!!")
+    } 
+    else {
+      alert("No patient selected!!")
+    }
+    setDeletingPatients(false);
+    
   };
 
   async function getPatientsData() {
@@ -157,10 +209,20 @@ export default function PatientsDetails() {
               >
                 Clear Filters
               </Button>
+              <Button
+                disabled = {deletingPatients}
+                type="submit"
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick = {handleDeletePatients}
+              >
+                Delete selected patients
+              </Button>
           </Box>
       <Box className = 'patientGridBox' sx={{ flexGrow: 1 }}>
         <div className = "patientGridContainer" >
         <DataGrid
+            checkboxSelection
             className = "patientDataGrid"
             onRowClick = {(row) => history.push('/patientprofile', { patient: row.row })}
             rows={filteredPatientsData}
@@ -171,6 +233,7 @@ export default function PatientsDetails() {
             rowHeight={60}
             autoHeight={true}
             disableExtendRowFullWidth={true}
+            onSelectionModelChange = {itm => setSelectedPatients(itm)}
           />
         </div>
       </Box>
