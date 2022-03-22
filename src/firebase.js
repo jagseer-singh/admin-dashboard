@@ -23,7 +23,7 @@ const firebaseConfig_dev = {
   measurementId: "G-SSECZ255SR"
 };
 
-export const app = initializeApp(firebaseConfig_dev);
+export const app = initializeApp(firebaseConfig_project);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
