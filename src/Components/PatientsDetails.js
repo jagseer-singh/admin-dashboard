@@ -5,13 +5,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import FormControl from "@mui/material/FormControl";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, setDoc } from "firebase/firestore";
 import * as React from 'react';
 import { db,storage } from "../firebase";
 import { DataGrid } from '@mui/x-data-grid';
 import { useHistory } from "react-router-dom";
 import { deleteDoc, doc } from "firebase/firestore";
-import { ref, deleteObject } from "firebase/storage"
+import { ref, deleteObject } from "firebase/storage";
+import { CSVLink, CSVDownload } from 'react-csv';
 
 const columns = [
   { field: 'firstName', headerName: 'First name', width: 160 },
@@ -23,8 +24,15 @@ const columns = [
   { field: 'userName', headerName: 'Created By', width: 180 },
 ];
 
+const csvDataHeaders = [
+  { label: "First Name", key: "firstName" },
+  { label: "Last Name", key: "lastName" }
+];
+
 export default function PatientsDetails() {
   const history = useHistory();
+  const csvLink = React.createRef()
+
   const [loading, setLoading] = React.useState(true);
   const [patientsData, setPatientsData] = React.useState([]);
   const [filteredPatientsData, setFilteredPatientsData] = React.useState([]);
@@ -34,6 +42,8 @@ export default function PatientsDetails() {
   const [reportFilter, setReportFilter] = React.useState(-1);
   const [selectedPatients, setSelectedPatients] = React.useState([]);
   const [deletingPatients, setDeletingPatients] = React.useState(false);
+  const [downloadingData, setDownloadingData] = React.useState(false);
+  const [csvData, setCsvData] = React.useState([]);
 
   const applyFilters = (userF, nameF, reportF) => {
     let filteredDataTemp = patientsData;
@@ -120,6 +130,13 @@ export default function PatientsDetails() {
     
   };
 
+  async function downloadPatientsData(){
+    setDownloadingData(true);
+
+    csvLink.current.link.click()
+    setDownloadingData(false);
+  }
+
   async function getPatientsData() {
     const usersCollRef = collection(db, "users");
     const usersSnap = await getDocs(usersCollRef);
@@ -150,6 +167,29 @@ export default function PatientsDetails() {
     setPatientsData(patientsDataTemp);
     
     setFilteredPatientsData(patientsDataTemp);
+
+    const patientDataMap = {};
+    patientsDataTemp.forEach((patient) => {
+      patientDataMap[patient.id] = patient
+    })
+
+    const labReportRef = collection(db, "labReports");
+    const labReportSnap = await getDocs(labReportRef);
+    labReportSnap.docs.forEach((doc) => {
+      patientDataMap[doc.id] = {...patientDataMap[doc.id], ...doc.data()};
+    })
+
+    const firstImpressionRef = collection(db, "firstImpression");
+    const firstImpressionSnap = await getDocs(firstImpressionRef);
+    firstImpressionSnap.docs.forEach((doc) => {
+      patientDataMap[doc.id] = {...patientDataMap[doc.id], ...doc.data()};
+    })
+
+    const csvDataTemp = [];
+    for(const key in patientDataMap){
+      csvDataTemp.push(patientDataMap[key]);
+    }
+    setCsvData(csvDataTemp);
     setLoading(false);
   }
   
@@ -218,6 +258,23 @@ export default function PatientsDetails() {
               >
                 Delete selected patients
               </Button>
+              <Button
+                disabled = {downloadingData || loading}
+                type="submit"
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick = {downloadPatientsData}
+              >
+                Download Data
+              </Button>
+                <CSVLink
+                  data={csvData}
+                  headers={csvDataHeaders}
+                  filename={"temp.csv"}
+                  ref = {csvLink}
+                  target="_blank" 
+                >
+                </CSVLink>
           </Box>
       <Box className = 'patientGridBox' sx={{ flexGrow: 1 }}>
         <div className = "patientGridContainer" >
