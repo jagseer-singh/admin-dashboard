@@ -11,8 +11,11 @@ import { db,storage } from "../firebase";
 import { DataGrid } from '@mui/x-data-grid';
 import { useHistory } from "react-router-dom";
 import { deleteDoc, doc } from "firebase/firestore";
-import { ref, deleteObject } from "firebase/storage";
+import { ref, deleteObject, getDownloadURL } from "firebase/storage";
 import { CSVLink, CSVDownload } from 'react-csv';
+import { saveAs } from 'file-saver';
+
+var zip = require('jszip')();
 
 const columns = [
   { field: 'firstName', headerName: 'First name', width: 160 },
@@ -29,6 +32,8 @@ const csvDataHeaders = [
   { label: "Last Name", key: "lastName" }
 ];
 
+const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_left', 'palm_right', 'tongue'];
+
 export default function PatientsDetails() {
   const history = useHistory();
   const csvLink = React.createRef()
@@ -43,6 +48,7 @@ export default function PatientsDetails() {
   const [selectedPatients, setSelectedPatients] = React.useState([]);
   const [deletingPatients, setDeletingPatients] = React.useState(false);
   const [downloadingData, setDownloadingData] = React.useState(false);
+  const [downloadingZip, setDownloadingZip] = React.useState(false);
   const [csvData, setCsvData] = React.useState([]);
 
   const applyFilters = (userF, nameF, reportF) => {
@@ -130,10 +136,87 @@ export default function PatientsDetails() {
     
   };
 
+  async function downloadZip(){
+    console.log("Downloading zip...");
+    await zip.generateAsync({type:"blob"}).then(function(content) {
+      // see FileSaver.js
+      saveAs(content, "dataset.zip");
+    });
+    setDownloadingZip(false);
+    console.log("Zip downloaded");
+  }
+
   async function downloadPatientsData(){
     setDownloadingData(true);
+    setDownloadingZip(true);
+    
+    var left_eye_folder = zip.folder("left_eye");
+    var right_eye_folder = zip.folder("right_eye");
+    var left_nail_folder = zip.folder("left_nail");
+    var right_nail_folder = zip.folder("right_nail");
+    var palm_left_folder = zip.folder("palm_left");
+    var palm_right_folder = zip.folder("palm_right");
+    var tongue_folder = zip.folder("tongue");
 
-    csvLink.current.link.click()
+    const totalCount = csvData.length * bodyParts.length;
+    var count = 0;
+    csvData.forEach((patient) => {
+      bodyParts.forEach((bodyPart) => {
+        const urlString = `${bodyPart}/${patient.id}`;
+        getDownloadURL(ref(storage, urlString))
+        .then((url) => {
+          
+          const xhr = new XMLHttpRequest();
+          
+          xhr.responseType = 'blob';
+          xhr.onload = (event) => {
+            const blob = xhr.response;
+            console.log(blob);
+            const fileExt = blob.type.split("/")[1];
+            if(bodyPart == "tongue"){
+              tongue_folder.file(`${patient.id}.${fileExt}`, blob);
+            }
+            else if(bodyPart == "left_eye"){
+              left_eye_folder.file(`${patient.id}.${fileExt}`, blob);
+            }
+            else if(bodyPart == "right_eye"){
+              right_eye_folder.file(`${patient.id}.${fileExt}`, blob);
+            }
+            else if(bodyPart == "left_nail"){
+              left_nail_folder.file(`${patient.id}.${fileExt}`, blob);
+            }
+            else if(bodyPart == "right_nail"){
+              right_nail_folder.file(`${patient.id}.${fileExt}`, blob);
+            }
+            else if(bodyPart == "palm_right"){
+              palm_right_folder.file(`${patient.id}.${fileExt}`, blob);
+            }
+            else if(bodyPart == "palm_left"){
+              palm_left_folder.file(`${patient.id}.${fileExt}`, blob);
+            }
+
+            count++;
+            if(totalCount == count) {
+              downloadZip();
+              count = 0;
+            }
+          };
+          xhr.open('GET', url);
+          xhr.send();
+          
+        })
+        .catch((error) => {
+          console.log("ERROR:",error);
+          count++;
+          if(totalCount == count) {
+            downloadZip();
+            count = 0;
+          }
+        });
+      })
+    })
+
+    csvLink.current.link.click();
     setDownloadingData(false);
   }
 
@@ -259,7 +342,7 @@ export default function PatientsDetails() {
                 Delete selected patients
               </Button>
               <Button
-                disabled = {downloadingData || loading}
+                disabled = {downloadingData || loading || downloadingZip}
                 type="submit"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
@@ -270,7 +353,7 @@ export default function PatientsDetails() {
                 <CSVLink
                   data={csvData}
                   headers={csvDataHeaders}
-                  filename={"temp.csv"}
+                  filename={"patient.csv"}
                   ref = {csvLink}
                   target="_blank" 
                 >
