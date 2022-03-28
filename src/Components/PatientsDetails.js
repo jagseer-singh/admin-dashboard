@@ -28,8 +28,34 @@ const columns = [
 ];
 
 const csvDataHeaders = [
+  { label: "Patient ID", key: "patientId" },
   { label: "First Name", key: "firstName" },
-  { label: "Last Name", key: "lastName" }
+  { label: "Last Name", key: "lastName" },
+  { label: "User Name", key: "userName" },
+  { label: "Created On", key: "createdOn" },
+  { label: "Creator User ID", key: "creatorUserId" },
+  { label: "Date Of Birth", key: "dateOfBirth" },
+  { label: "Gender", key: "gender" },
+  { label: "Gestation Period", key: "gestationPeriod" },
+  { label: "Height", key: "height" },
+  { label: "Last Modified On", key: "lastModifiedOn" },
+  { label: "Last Period Date", key: "lastPeriodDate" },
+  { label: "Organisation Patient ID", key: "organisationPatientId" },
+  { label: "Socio-economic status", key: "socioEconomicStatus" },
+  { label: "Weight", key: "weight" },
+  { label: "First Impression Received", key: "firstImpressionReceived" },
+  { label: "Anaemia", key: "anemia" },
+  { label: "Malnutrition", key: "malnutrition" },
+  { label: "Lab Report Received", key: "received" },
+  { label: "CRP", key: "lab_report_field_crp" },
+  { label: "HB", key: "lab_report_field_hb" },
+  { label: "RBC", key: "lab_report_field_rbc" },
+  { label: "Serum B12", key: "lab_report_field_serum_b12" },
+  { label: "Serum Ferritin", key: "lab_report_field_serum_ferritin" },
+  { label: "Serum Folate", key: "lab_report_field_serum_folate" },
+  { label: "Serum Iron", key: "lab_report_field_serum_iron" },
+  { label: "Smear", key: "lab_report_field_smear" },
+  { label: "TIBC", key: "lab_report_field_tibc" },
 ];
 
 const bodyParts = ['left_eye', 'right_eye', 'left_nail', 'right_nail', 'palm_left', 'palm_right', 'tongue'];
@@ -174,25 +200,25 @@ export default function PatientsDetails() {
             console.log(blob);
             const fileExt = blob.type.split("/")[1];
             if(bodyPart == "tongue"){
-              tongue_folder.file(`${patient.id}.${fileExt}`, blob);
+              tongue_folder.file(`${patient.patientId}.${fileExt}`, blob);
             }
             else if(bodyPart == "left_eye"){
-              left_eye_folder.file(`${patient.id}.${fileExt}`, blob);
+              left_eye_folder.file(`${patient.patientId}.${fileExt}`, blob);
             }
             else if(bodyPart == "right_eye"){
-              right_eye_folder.file(`${patient.id}.${fileExt}`, blob);
+              right_eye_folder.file(`${patient.patientId}.${fileExt}`, blob);
             }
             else if(bodyPart == "left_nail"){
-              left_nail_folder.file(`${patient.id}.${fileExt}`, blob);
+              left_nail_folder.file(`${patient.patientId}.${fileExt}`, blob);
             }
             else if(bodyPart == "right_nail"){
-              right_nail_folder.file(`${patient.id}.${fileExt}`, blob);
+              right_nail_folder.file(`${patient.patientId}.${fileExt}`, blob);
             }
             else if(bodyPart == "palm_right"){
-              palm_right_folder.file(`${patient.id}.${fileExt}`, blob);
+              palm_right_folder.file(`${patient.patientId}.${fileExt}`, blob);
             }
             else if(bodyPart == "palm_left"){
-              palm_left_folder.file(`${patient.id}.${fileExt}`, blob);
+              palm_left_folder.file(`${patient.patientId}.${fileExt}`, blob);
             }
 
             count++;
@@ -348,7 +374,7 @@ export default function PatientsDetails() {
                 sx={{ mt: 3, mb: 2 }}
                 onClick = {downloadPatientsData}
               >
-                Download Data
+                {downloadingData || downloadingZip ? "Downloading...":"Download Data"}
               </Button>
                 <CSVLink
                   data={csvData}
