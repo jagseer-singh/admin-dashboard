@@ -5,6 +5,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import FormControl from "@mui/material/FormControl";
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import { collection, getDocs, setDoc } from "firebase/firestore";
 import * as React from 'react';
 import { db,storage } from "../firebase";
@@ -75,6 +78,8 @@ export default function PatientsDetails() {
   const [deletingPatients, setDeletingPatients] = React.useState(false);
   const [downloadingData, setDownloadingData] = React.useState(false);
   const [downloadingZip, setDownloadingZip] = React.useState(false);
+  const [zippingFiles, setZippingFiles] = React.useState(false);
+  const [zipPercent, setZipPercent] = React.useState(0);
   const [csvData, setCsvData] = React.useState([]);
 
   const applyFilters = (userF, nameF, reportF) => {
@@ -164,12 +169,19 @@ export default function PatientsDetails() {
 
   async function downloadZip(){
     console.log("Downloading zip...");
+    setZippingFiles(true);
     await zip.generateAsync({type:"blob"}).then(function(content) {
       // see FileSaver.js
       saveAs(content, "dataset.zip");
     });
     setDownloadingZip(false);
+    setZipPercent(0);
+    setZippingFiles(false);
     console.log("Zip downloaded");
+  }
+
+  function updateZipPercent(metadata){
+    setZipPercent(metadata.percent);
   }
 
   async function downloadPatientsData(){
@@ -191,13 +203,12 @@ export default function PatientsDetails() {
         const urlString = `${bodyPart}/${patient.id}`;
         getDownloadURL(ref(storage, urlString))
         .then((url) => {
-          
+
           const xhr = new XMLHttpRequest();
-          
+
           xhr.responseType = 'blob';
           xhr.onload = (event) => {
             const blob = xhr.response;
-            console.log(blob);
             const fileExt = blob.type.split("/")[1];
             if(bodyPart == "tongue"){
               tongue_folder.file(`${patient.patientId}.${fileExt}`, blob);
@@ -222,6 +233,7 @@ export default function PatientsDetails() {
             }
 
             count++;
+            setZipPercent(count*100/totalCount);
             if(totalCount == count) {
               downloadZip();
               count = 0;
@@ -234,6 +246,7 @@ export default function PatientsDetails() {
         .catch((error) => {
           console.log("ERROR:",error);
           count++;
+          setZipPercent(count*100/totalCount);
           if(totalCount == count) {
             downloadZip();
             count = 0;
@@ -309,6 +322,52 @@ export default function PatientsDetails() {
   });
 
   return (
+    <React.Fragment>
+    { downloadingZip == true ? 
+    <Backdrop
+        sx={{ backgroundColor: "rgb(255,255,255,0.85)",
+        color: "blue", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={true}
+      >
+       { zippingFiles ? 
+       <CircularProgress size="10rem" thickness={1.5}/>
+       :
+       <CircularProgress size="10rem" thickness={1.5} variant="determinate" value = {Math.round(zipPercent)} /> }
+       <Box
+        sx={{
+          top: 0,
+          left: 0,
+          bottom: 300,
+          right: 0,
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Typography sx={{ fontSize: 20, m: 1 }}  color="text.primary" >
+          { zippingFiles ? "Zipping Files, this might take a while..." : "Retrieving Data"}
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          top: 0,
+          left: 0,
+          bottom: 0,
+          right: 0,
+          position: 'absolute',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Typography sx={{ fontSize: 25, m: 1 }} variant="caption" component="div" color="text.primary">
+          {zippingFiles ? "Zipping" :`${zipPercent.toFixed(1)}%`}
+        </Typography>
+      </Box>
+      </Backdrop> :
+      <div></div>
+      }
     <div>
           <Box className="filterContainer">
             <FormControl className="userFilter">
@@ -404,5 +463,6 @@ export default function PatientsDetails() {
         </div>
       </Box>
     </div>
+    </React.Fragment>
   );
 }
