@@ -197,7 +197,7 @@ export default function PatientsDetails() {
     var tongue_folder = zip.folder("tongue");
 
     const totalCount = csvData.length * bodyParts.length;
-    var count = 0;
+    let count = 0;
     csvData.forEach((patient) => {
       bodyParts.forEach((bodyPart) => {
         const urlString = `${bodyPart}/${patient.id}`;
