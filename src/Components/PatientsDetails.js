@@ -17,8 +17,16 @@ import { deleteDoc, doc } from "firebase/firestore";
 import { ref, deleteObject, getDownloadURL } from "firebase/storage";
 import { CSVLink, CSVDownload } from 'react-csv';
 import { saveAs } from 'file-saver';
+import { resolveMotionValue } from 'framer-motion';
 
 var zip = require('jszip')();
+var left_eye_folder = zip.folder("left_eye");
+var right_eye_folder = zip.folder("right_eye");
+var left_nail_folder = zip.folder("left_nail");
+var right_nail_folder = zip.folder("right_nail");
+var palm_left_folder = zip.folder("palm_left");
+var palm_right_folder = zip.folder("palm_right");
+var tongue_folder = zip.folder("tongue");
 
 const columns = [
   { field: 'firstName', headerName: 'First name', width: 160 },
@@ -81,7 +89,7 @@ export default function PatientsDetails() {
   const [zippingFiles, setZippingFiles] = React.useState(false);
   const [zipPercent, setZipPercent] = React.useState(0);
   const [csvData, setCsvData] = React.useState([]);
-
+  
   const applyFilters = (userF, nameF, reportF) => {
     let filteredDataTemp = patientsData;
     filteredDataTemp = filteredDataTemp.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(nameF.toLowerCase()));
@@ -184,79 +192,102 @@ export default function PatientsDetails() {
     setZipPercent(metadata.percent);
   }
 
-  async function downloadPatientsData(){
-    setDownloadingData(true);
-    setDownloadingZip(true);
-    
-    var left_eye_folder = zip.folder("left_eye");
-    var right_eye_folder = zip.folder("right_eye");
-    var left_nail_folder = zip.folder("left_nail");
-    var right_nail_folder = zip.folder("right_nail");
-    var palm_left_folder = zip.folder("palm_left");
-    var palm_right_folder = zip.folder("palm_right");
-    var tongue_folder = zip.folder("tongue");
+  function getImages(dataToBeDownloaded, i){
+    return new Promise(function (resolve, reject) {
+        let count = 0;
+        let totalCount = 7 * bodyParts.length;
+       for(let a=0; a<7; a++){
+        if( (i+a) >=dataToBeDownloaded.length){
+          count+=7;
+          continue;
+        }
+         //console.log("i,a:",i," ", a);
+         for(const bodyPart of bodyParts) {
+          const patient = dataToBeDownloaded[i+a];
+          const urlString = `${bodyPart}/${patient.id}`;
+          //console.log(urlString);
+          getDownloadURL(ref(storage, urlString))
+          .then((url) => {
 
-    const totalCount = csvData.length * bodyParts.length;
-    var count = 0;
-    csvData.forEach((patient) => {
-      bodyParts.forEach((bodyPart) => {
-        const urlString = `${bodyPart}/${patient.id}`;
-        getDownloadURL(ref(storage, urlString))
-        .then((url) => {
+            const xhr = new XMLHttpRequest();
 
-          const xhr = new XMLHttpRequest();
-
-          xhr.responseType = 'blob';
-          xhr.onload = (event) => {
-            const blob = xhr.response;
-            const fileExt = blob.type.split("/")[1];
-            if(bodyPart == "tongue"){
-              tongue_folder.file(`${patient.patientId}.${fileExt}`, blob);
-            }
-            else if(bodyPart == "left_eye"){
-              left_eye_folder.file(`${patient.patientId}.${fileExt}`, blob);
-            }
-            else if(bodyPart == "right_eye"){
-              right_eye_folder.file(`${patient.patientId}.${fileExt}`, blob);
-            }
-            else if(bodyPart == "left_nail"){
-              left_nail_folder.file(`${patient.patientId}.${fileExt}`, blob);
-            }
-            else if(bodyPart == "right_nail"){
-              right_nail_folder.file(`${patient.patientId}.${fileExt}`, blob);
-            }
-            else if(bodyPart == "palm_right"){
-              palm_right_folder.file(`${patient.patientId}.${fileExt}`, blob);
-            }
-            else if(bodyPart == "palm_left"){
-              palm_left_folder.file(`${patient.patientId}.${fileExt}`, blob);
-            }
-
+            xhr.responseType = 'blob';
+            xhr.onload = (event) => {
+              const blob = xhr.response;
+              const fileExt = blob.type.split("/")[1];
+              if(bodyPart == "tongue"){
+                tongue_folder.file(`${patient.patientId}.${fileExt}`, blob);
+              }
+              else if(bodyPart == "left_eye"){
+                left_eye_folder.file(`${patient.patientId}.${fileExt}`, blob);
+              }
+              else if(bodyPart == "right_eye"){
+                right_eye_folder.file(`${patient.patientId}.${fileExt}`, blob);
+              }
+              else if(bodyPart == "left_nail"){
+                left_nail_folder.file(`${patient.patientId}.${fileExt}`, blob);
+              }
+              else if(bodyPart == "right_nail"){
+                right_nail_folder.file(`${patient.patientId}.${fileExt}`, blob);
+              }
+              else if(bodyPart == "palm_right"){
+                palm_right_folder.file(`${patient.patientId}.${fileExt}`, blob);
+              }
+              else if(bodyPart == "palm_left"){
+                palm_left_folder.file(`${patient.patientId}.${fileExt}`, blob);
+              }
+              count++;
+              //console.log("Count:", count, totalCount);
+              if(count === totalCount ){
+                resolve(xhr.status);
+              }
+            };
+            xhr.open('GET', url);
+            xhr.send();
+            
+          })
+          .catch((error) => {
+            console.log("ERROR:",error);
             count++;
-            setZipPercent(count*100/totalCount);
-            if(totalCount == count) {
-              downloadZip();
-              count = 0;
+            //console.log("Count:", count, totalCount);
+            if(count === totalCount){
+              resolve(error);
             }
-          };
-          xhr.open('GET', url);
-          xhr.send();
-          
-        })
-        .catch((error) => {
-          console.log("ERROR:",error);
-          count++;
-          setZipPercent(count*100/totalCount);
-          if(totalCount == count) {
-            downloadZip();
-            count = 0;
-          }
-        });
-      })
-    })
+          })
+        }
+        
+       }
+    });
+  }
+
+  async function downloadPatientsData(dataToBeDownloaded){
+    setDownloadingData(true);
 
     csvLink.current.link.click();
+    setDownloadingZip(true);
+    //console.log(csvData, bodyParts);
+    let patientCount = 0;
+    for(let i=0; i<dataToBeDownloaded.length ; i+=7){
+        //console.log("I:", i);
+        const img = await getImages(dataToBeDownloaded, i);
+        patientCount+=7;
+        setZipPercent(patientCount*100/dataToBeDownloaded.length);
+    }
+    downloadZip();
     setDownloadingData(false);
+  }
+
+  function downloadCompletePatientsData(){
+    downloadPatientsData(csvData);
+  }
+
+  function downloadSelectedPatientsData(){
+    if(selectedPatients.length > 0){
+      downloadPatientsData(csvData.filter((patient) => selectedPatients.includes(patient.id)));
+    }
+    else {
+      alert("No patient selected!!")
+    }
   }
 
   async function getPatientsData() {
@@ -420,6 +451,7 @@ export default function PatientsDetails() {
               <Button
                 disabled = {deletingPatients}
                 type="submit"
+                color="error"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick = {handleDeletePatients}
@@ -431,9 +463,18 @@ export default function PatientsDetails() {
                 type="submit"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick = {downloadPatientsData}
+                onClick = {downloadCompletePatientsData}
               >
                 {downloadingData || downloadingZip ? "Downloading...":"Download Data"}
+              </Button>
+              <Button
+                disabled = {downloadingData || loading || downloadingZip}
+                type="submit"
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick = {downloadSelectedPatientsData}
+              >
+                {downloadingData || downloadingZip ? "Downloading...":"Download Selected Patients"}
               </Button>
                 <CSVLink
                   data={csvData}
