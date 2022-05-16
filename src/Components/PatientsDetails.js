@@ -88,9 +88,8 @@ export default function PatientsDetails() {
   const [downloadingZip, setDownloadingZip] = React.useState(false);
   const [zippingFiles, setZippingFiles] = React.useState(false);
   const [zipPercent, setZipPercent] = React.useState(0);
-  const [patientData, setUserData] = React.useState([]);
   const [csvData, setCsvData] = React.useState([]);
-
+  
   const applyFilters = (userF, nameF, reportF) => {
     let filteredDataTemp = patientsData;
     filteredDataTemp = filteredDataTemp.filter((patient) => (patient.firstName + ' ' + patient.lastName).toLowerCase().startsWith(nameF.toLowerCase()));
@@ -193,18 +192,18 @@ export default function PatientsDetails() {
     setZipPercent(metadata.percent);
   }
 
-  function getImages(csvData, i){
+  function getImages(dataToBeDownloaded, i){
     return new Promise(function (resolve, reject) {
         let count = 0;
         let totalCount = 7 * bodyParts.length;
        for(let a=0; a<7; a++){
-        if( (i+a) >=csvData.length){
+        if( (i+a) >=dataToBeDownloaded.length){
           count+=7;
           continue;
         }
          //console.log("i,a:",i," ", a);
          for(const bodyPart of bodyParts) {
-          const patient = csvData[i+a];
+          const patient = dataToBeDownloaded[i+a];
           const urlString = `${bodyPart}/${patient.id}`;
           //console.log(urlString);
           getDownloadURL(ref(storage, urlString))
@@ -261,21 +260,34 @@ export default function PatientsDetails() {
     });
   }
 
-  async function downloadPatientsData(){
+  async function downloadPatientsData(dataToBeDownloaded){
     setDownloadingData(true);
 
     csvLink.current.link.click();
     setDownloadingZip(true);
     //console.log(csvData, bodyParts);
     let patientCount = 0;
-    for(let i=0; i<csvData.length ; i+=7){
+    for(let i=0; i<dataToBeDownloaded.length ; i+=7){
         //console.log("I:", i);
-        const img = await getImages(csvData, i);
+        const img = await getImages(dataToBeDownloaded, i);
         patientCount+=7;
-        setZipPercent(patientCount*100/csvData.length);
+        setZipPercent(patientCount*100/dataToBeDownloaded.length);
     }
     downloadZip();
     setDownloadingData(false);
+  }
+
+  function downloadCompletePatientsData(){
+    downloadPatientsData(csvData);
+  }
+
+  function downloadSelectedPatientsData(){
+    if(selectedPatients.length > 0){
+      downloadPatientsData(csvData.filter((patient) => selectedPatients.includes(patient.id)));
+    }
+    else {
+      alert("No patient selected!!")
+    }
   }
 
   async function getPatientsData() {
@@ -439,6 +451,7 @@ export default function PatientsDetails() {
               <Button
                 disabled = {deletingPatients}
                 type="submit"
+                color="error"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick = {handleDeletePatients}
@@ -450,9 +463,18 @@ export default function PatientsDetails() {
                 type="submit"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick = {downloadPatientsData}
+                onClick = {downloadCompletePatientsData}
               >
                 {downloadingData || downloadingZip ? "Downloading...":"Download Data"}
+              </Button>
+              <Button
+                disabled = {downloadingData || loading || downloadingZip}
+                type="submit"
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick = {downloadSelectedPatientsData}
+              >
+                {downloadingData || downloadingZip ? "Downloading...":"Download Selected Patients"}
               </Button>
                 <CSVLink
                   data={csvData}
